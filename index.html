@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulator Ujian — TKA Matematika SMA 2026</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.395.0/dist/umd/lucide.min.js" onerror="this.remove()"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy:   { 950:'#0B1220', 900:'#0F172A', 800:'#152036', 700:'#1E293B' },
+          slateink: { 700:'#334155', 600:'#475569', 500:'#64748B', 400:'#94A3B8', 300:'#CBD5E1', 200:'#E2E8F0', 100:'#EEF2F8', 50:'#F6F8FC' },
+          brand:  { 700:'#1D4ED8', 600:'#2563EB', 500:'#3B82F6', 100:'#DBEAFE', 50:'#EFF5FF' },
+          good:   { 700:'#15803D', 600:'#16A34A', 100:'#DCFCE7', 50:'#F0FDF4' },
+          bad:    { 700:'#B91C1C', 600:'#DC2626', 100:'#FEE2E2', 50:'#FEF2F2' },
+          warn:   { 700:'#B45309', 600:'#D97706', 100:'#FEF3C7', 50:'#FFFBEB' },
+        },
+        fontFamily: {
+          sans: ['"Plus Jakarta Sans"','ui-sans-serif','system-ui','sans-serif'],
+          mono: ['"JetBrains Mono"','ui-monospace','monospace'],
+        },
+        boxShadow: {
+          card: '0 1px 2px rgba(15,23,42,.04), 0 12px 32px -16px rgba(15,23,42,.14)',
+          pop:  '0 20px 60px -20px rgba(15,23,42,.35)',
+        },
+        borderRadius: { '2xl': '1.15rem', '3xl': '1.6rem' },
+      }
+    }
+  }
+</script>
+
+<style>
+  :root{
+    --ink: #0F172A;
+  }
+  html,body{ background:#F3F6FB; }
+  body{ font-family:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif; color:var(--ink); }
+  .num-tab{ font-variant-numeric: tabular-nums; }
+  ::selection{ background:#BFDBFE; }
+
+  /* subtle grid texture for hero backgrounds */
+  .grid-texture{
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,.14) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+
+  /* katex sizing */
+  .katex{ font-size: 1.04em; }
+  .math-block .katex-display{ margin: .85rem 0; overflow-x:auto; overflow-y:hidden; padding-bottom:2px; }
+  .prose-q p{ margin: 0 0 .65rem 0; line-height:1.65; }
+  .prose-q p:last-child{ margin-bottom:0; }
+  .prose-q ul{ margin: .4rem 0 .8rem 0; }
+  .prose-q li{ margin:.2rem 0; line-height:1.55; }
+
+  .q-table{ border-collapse:collapse; width:100%; margin:.75rem 0 1rem; font-size:.92em; }
+  .q-table th, .q-table td{ border:1px solid #DCE3EE; padding:.45rem .65rem; text-align:center; }
+  .q-table thead th{ background:#EFF5FF; color:#1D4ED8; font-weight:700; }
+  .q-table td:first-child, .q-table th:first-child{ text-align:left; }
+
+  .q-box{ border:1.5px dashed #CBD5E1; border-radius:1rem; padding:.9rem 1.1rem; background:#F8FAFC; margin:.75rem 0; }
+
+  .opt-shell{
+    position:relative; display:flex; gap:.8rem; align-items:flex-start;
+    border:1.5px solid #E2E8F0; background:#fff; border-radius:1rem;
+    padding:.85rem 1rem; cursor:pointer; transition:border-color .15s, background .15s, box-shadow .15s;
+  }
+  .opt-shell:hover{ border-color:#93C5FD; background:#F8FBFF; }
+  .opt-shell.is-selected{ border-color:#2563EB; background:#EFF5FF; box-shadow:0 0 0 3px rgba(37,99,235,.10); }
+  .opt-shell.is-correct{ border-color:#16A34A; background:#F0FDF4; }
+  .opt-shell.is-incorrect{ border-color:#DC2626; background:#FEF2F2; }
+  .opt-radio{
+    flex:none; width:1.3rem; height:1.3rem; border-radius:9999px; border:2px solid #CBD5E1;
+    display:flex; align-items:center; justify-content:center; margin-top:.1rem; background:#fff;
+    transition:border-color .15s, background .15s;
+  }
+  .opt-shell.is-selected .opt-radio{ border-color:#2563EB; }
+  .opt-radio-dot{ width:.62rem; height:.62rem; border-radius:9999px; background:#2563EB; opacity:0; transform:scale(.4); transition:opacity .12s, transform .12s; }
+  .opt-shell.is-selected .opt-radio-dot{ opacity:1; transform:scale(1); }
+
+  .opt-check{
+    flex:none; width:1.3rem; height:1.3rem; border-radius:.4rem; border:2px solid #CBD5E1;
+    display:flex; align-items:center; justify-content:center; margin-top:.1rem; background:#fff;
+    transition:border-color .15s, background .15s;
+  }
+  .opt-shell.is-selected .opt-check{ border-color:#2563EB; background:#2563EB; }
+
+  .navpill{
+    width:2.55rem; height:2.55rem; border-radius:.75rem; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.85rem; border:1.6px solid #E2E8F0; background:#fff; color:#475569;
+    transition:all .12s; cursor:pointer;
+  }
+  .navpill:hover{ border-color:#93C5FD; }
+  .navpill.st-answered{ background:#2563EB; border-color:#2563EB; color:#fff; }
+  .navpill.st-flagged{ background:#FEF3C7; border-color:#F59E0B; color:#92400E; }
+  .navpill.st-active{ box-shadow:0 0 0 2.5px #2563EB, 0 0 0 5px #DBEAFE; }
+
+  .scrollbar-thin::-webkit-scrollbar{ width:7px; height:7px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb{ background:#CBD5E1; border-radius:99px; }
+  .scrollbar-thin::-webkit-scrollbar-track{ background:transparent; }
+
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .anim-fade-up{ animation: fadeUp .28s cubic-bezier(.2,.7,.3,1); }
+  @keyframes popIn{ from{opacity:0; transform:scale(.94);} to{opacity:1; transform:scale(1);} }
+  .anim-pop{ animation: popIn .18s cubic-bezier(.2,.7,.3,1); }
+
+  input[type=range].slider-blue{ -webkit-appearance:none; height:6px; border-radius:99px; background:#DBEAFE; }
+  input[type=range].slider-blue::-webkit-slider-thumb{
+    -webkit-appearance:none; width:20px; height:20px; border-radius:99px; background:#2563EB;
+    border:3px solid #fff; box-shadow:0 2px 8px rgba(37,99,235,.4); cursor:pointer; margin-top:-7px;
+  }
+  input[type=range].slider-blue::-moz-range-thumb{
+    width:20px; height:20px; border-radius:99px; background:#2563EB; border:3px solid #fff;
+    box-shadow:0 2px 8px rgba(37,99,235,.4); cursor:pointer;
+  }
+  input[type=range].slider-blue::-webkit-slider-runnable-track{ height:6px; border-radius:99px; }
+  input[type=range].slider-blue::-moz-range-track{ height:6px; border-radius:99px; background:#DBEAFE; }
+
+  .gauge-ring{ transition: stroke-dashoffset 1s cubic-bezier(.16,1,.3,1); }
+
+  @media print{ body{ background:#fff; } #pdf-overlay{ display:none !important; } }
+  #print-report{ position:absolute; left:0; top:0; width:794px; background:#fff; z-index:-1; pointer-events:none; }
+  #print-report .katex-display{ overflow:visible !important; margin:.5rem 0; }
+  #print-report .prose-q p, #print-report p{ margin:0 0 .5rem 0; }
+  #pdf-overlay{ position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,.72); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:15px; }
+</style>
+</head>
+<body class="min-h-screen antialiased">
+<div id="app"></div>
+<script>
+const EXAM_DATA = [{"code":"26MATGMPGEOM12SU-000000-1011","level":"MOTS","type":"mcma","elemen":"Geometri dan Pengukuran","sub":"Objek Geometri","ind":"Menentukan hubungan antar bidang atau antar garis pada suatu bangun ruang.","stem":"<p>Sebuah kamar berbentuk balok ABCD.EFGH akan ditata ulang dengan menambahkan papan jadwal pada dinding. Di dalam kamar tersebut telah terpasang rak buku yang sejajar dengan rusuk AB, seperti pada gambar berikut.</p><svg viewBox=\"0 0 340 225\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:340px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><polygon points=\"50,80 210,80 210,190 50,190\" fill=\"none\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><polygon points=\"50,80 110,30 270,30 210,80\" fill=\"none\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><polygon points=\"210,80 270,30 270,140 210,190\" fill=\"#f1f5f9\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><line x1=\"50\" y1=\"190\" x2=\"110\" y2=\"140\" stroke=\"#0f172a\" stroke-width=\"1.2\" stroke-dasharray=\"5 4\"/><line x1=\"110\" y1=\"140\" x2=\"270\" y2=\"140\" stroke=\"#0f172a\" stroke-width=\"1.2\" stroke-dasharray=\"5 4\"/><line x1=\"110\" y1=\"140\" x2=\"110\" y2=\"30\" stroke=\"#0f172a\" stroke-width=\"1.2\" stroke-dasharray=\"5 4\"/><line x1=\"130\" y1=\"120\" x2=\"200\" y2=\"120\" stroke=\"#c2410c\" stroke-width=\"4\" /><text x=\"165\" y=\"110\" text-anchor=\"middle\" font-size=\"11\" fill=\"#c2410c\">Rak buku</text><text x=\"36\" y=\"80\" font-weight=\"700\" fill=\"#0f172a\">E</text><text x=\"214\" y=\"76\" font-weight=\"700\" fill=\"#0f172a\">F</text><text x=\"274\" y=\"28\" font-weight=\"700\" fill=\"#0f172a\">G</text><text x=\"98\" y=\"26\" font-weight=\"700\" fill=\"#0f172a\">H</text><text x=\"36\" y=\"200\" font-weight=\"700\" fill=\"#0f172a\">A</text><text x=\"214\" y=\"204\" font-weight=\"700\" fill=\"#0f172a\">B</text><text x=\"274\" y=\"152\" font-weight=\"700\" fill=\"#0f172a\">C</text><text x=\"98\" y=\"152\" font-weight=\"700\" fill=\"#0f172a\">D</text></svg>","post":"<p>Papan jadwal tidak boleh diletakkan pada dinding yang sejajar dengan rak buku tersebut. Berdasarkan aturan tersebut, pada dinding manakah papan jadwal dapat diletakkan?</p>","options":["ABCD","EFGH","ABFE","BCGF","ADHE"],"answer":[3,4],"explanation":"<p>Rusuk $AB$ sejajar dengan rusuk $DC$, $EF$, dan $HG$. Dinding yang memuat salah satu rusuk tersebut sejajar dengan rak buku, sehingga <b>tidak boleh</b> dipilih: $ABCD$, $EFGH$, $ABFE$, dan $DCGH$.</p><p>Dinding $BCGF$ dan $ADHE$ hanya memuat rusuk $BC$, $GF$, $AD$, $HE$ yang tegak lurus terhadap $AB$, sehingga tidak sejajar dengan rak buku.</p><p>Jadi papan jadwal dapat diletakkan pada dinding <b>BCGF dan ADHE</b>.</p>","no":1},{"code":"26MATGMPGEOM13SU-000000-1012","level":"MOTS","type":"pg","elemen":"Geometri dan Pengukuran","sub":"Objek Geometri","ind":"Menentukan panjang sisi yang tidak diketahui pada suatu bangun datar dengan menerapkan konsep kesebangunan.","stem":"<p>Sebuah tiang lampu taman setinggi 4,5 m menghasilkan bayangan sepanjang 3 m akibat sinar matahari. Pada saat yang bersamaan, sebatang pohon di dekat tiang tersebut memiliki bayangan sepanjang 8 m, seperti pada ilustrasi berikut.</p><svg viewBox=\"0 0 360 240\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:360px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><line x1=\"10\" y1=\"210\" x2=\"350\" y2=\"210\" stroke=\"#94a3b8\" stroke-width=\"1.4\" /><line x1=\"40\" y1=\"210\" x2=\"40\" y2=\"147\" stroke=\"#0f172a\" stroke-width=\"4\" /><text x=\"8\" y=\"140\" font-size=\"11\">Tiang lampu</text><text x=\"4\" y=\"182\" >4,5 m</text><line x1=\"40\" y1=\"147\" x2=\"82\" y2=\"210\" stroke=\"#2563eb\" stroke-width=\"1.6\" /><line x1=\"40\" y1=\"210\" x2=\"82\" y2=\"210\" stroke=\"#2563eb\" stroke-width=\"2\" stroke-dasharray=\"5 4\"/><text x=\"61\" y=\"226\" text-anchor=\"middle\">3 m</text><line x1=\"200\" y1=\"210\" x2=\"200\" y2=\"42\" stroke=\"#166534\" stroke-width=\"5\" /><circle cx=\"200\" cy=\"30\" r=\"20\" fill=\"#4ade80\"/><text x=\"207\" y=\"130\" >h = ?</text><text x=\"226\" y=\"34\" font-size=\"11\">Pohon</text><line x1=\"200\" y1=\"42\" x2=\"312\" y2=\"210\" stroke=\"#2563eb\" stroke-width=\"1.6\" /><line x1=\"200\" y1=\"210\" x2=\"312\" y2=\"210\" stroke=\"#2563eb\" stroke-width=\"2\" stroke-dasharray=\"5 4\"/><text x=\"256\" y=\"226\" text-anchor=\"middle\">8 m</text></svg>","post":"<p>Dengan menggunakan konsep kesebangunan, berapakah tinggi pohon tersebut?</p>","options":["10 m","10,5 m","11 m","12 m","13,5 m"],"answer":3,"explanation":"<p>Segitiga yang dibentuk tiang dan bayangannya sebangun dengan segitiga yang dibentuk pohon dan bayangannya, sehingga:</p>$$\\frac{\\text{tinggi tiang}}{\\text{bayangan tiang}}=\\frac{\\text{tinggi pohon}}{\\text{bayangan pohon}}\\;\\Rightarrow\\;\\frac{4{,}5}{3}=\\frac{h}{8}\\;\\Rightarrow\\;h=\\frac{4{,}5\\times8}{3}=12$$<p>Jadi tinggi pohon adalah <b>12 m</b>.</p>","no":2},{"code":"26MATGMPGEOM14SU-000000-1013","level":"MOTS","type":"kat","elemen":"Geometri dan Pengukuran","sub":"Objek Geometri","ind":"Menerapkan teorema Pythagoras dalam menyelesaikan permasalahan kontekstual sehari-hari.","stem":"<p>Sebuah taman sekolah berbentuk segitiga siku-siku akan ditanami pot bunga di sepanjang sisi miringnya. Panjang sisi tegak taman adalah 140 cm dan panjang sisi datar taman adalah 480 cm, seperti pada ilustrasi berikut.</p><svg viewBox=\"0 0 360 215\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:360px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><polygon points=\"50,93 50,170 314,170\" fill=\"#dcfce7\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><path d=\"M50 156 H64 V170\" fill=\"none\" stroke=\"#0f172a\"/><circle cx=\"50\" cy=\"93.0\" r=\"3.6\" fill=\"#c2410c\"/><circle cx=\"83\" cy=\"102.6\" r=\"3.6\" fill=\"#c2410c\"/><circle cx=\"116\" cy=\"112.3\" r=\"3.6\" fill=\"#c2410c\"/><circle cx=\"149\" cy=\"121.9\" r=\"3.6\" fill=\"#c2410c\"/><circle cx=\"182\" cy=\"131.5\" r=\"3.6\" fill=\"#c2410c\"/><circle cx=\"215\" cy=\"141.1\" r=\"3.6\" fill=\"#c2410c\"/><circle cx=\"248\" cy=\"150.8\" r=\"3.6\" fill=\"#c2410c\"/><circle cx=\"281\" cy=\"160.4\" r=\"3.6\" fill=\"#c2410c\"/><circle cx=\"314\" cy=\"170.0\" r=\"3.6\" fill=\"#c2410c\"/><text x=\"38\" y=\"92\" font-weight=\"700\" fill=\"#0f172a\">B</text><text x=\"38\" y=\"188\" font-weight=\"700\" fill=\"#0f172a\">A</text><text x=\"318\" y=\"188\" font-weight=\"700\" fill=\"#0f172a\">C</text><text x=\"26\" y=\"132\" text-anchor=\"middle\" transform=\"rotate(-90 26 132)\">140 cm</text><text x=\"182\" y=\"192\" text-anchor=\"middle\">480 cm</text><text x=\"185\" y=\"100\" font-size=\"11\" fill=\"#b91c1c\">sisi miring (tempat pot)</text><text x=\"185\" y=\"114\" font-size=\"11\" fill=\"#b91c1c\">500 cm</text></svg>","post":"<p>Ukuran diameter pot yang digunakan untuk bunga krisan berukuran 15 cm, bunga petunia berukuran 26 cm, dan bunga marigold berukuran 30 cm.</p><p>Berdasarkan ilustrasi, tentukan <b>Benar</b> atau <b>Salah</b> pernyataan berkaitan dengan banyak pot yang dapat diletakkan di sepanjang sisi miring taman tersebut!</p>","statements":["Ada 33 pot bunga krisan yang bisa diletakkan.","Ada 20 pot bunga petunia yang bisa diletakkan.","Ada 16 pot bunga marigold yang bisa diletakkan."],"answer":["B","S","B"],"explanation":"<p>Panjang sisi miring dengan teorema Pythagoras:</p>$$\\sqrt{140^2+480^2}=\\sqrt{19.600+230.400}=\\sqrt{250.000}=500\\text{ cm}$$<p>Banyak pot = panjang sisi miring dibagi diameter pot (dibulatkan ke bawah):</p><ol><li>Krisan: $500\\div15\\approx33{,}3\\Rightarrow33$ pot &rarr; <b>Benar</b>.</li><li>Petunia: $500\\div26\\approx19{,}2\\Rightarrow19$ pot (bukan 20) &rarr; <b>Salah</b>.</li><li>Marigold: $500\\div30\\approx16{,}7\\Rightarrow16$ pot &rarr; <b>Benar</b>.</li></ol>","no":3},{"code":"26MATGMPTRGM15SU-000000-1014","level":"MOTS","type":"pg","elemen":"Geometri dan Pengukuran","sub":"Transformasi Geometri","ind":"Menentukan bayangan atau titik asal dari suatu koordinat titik ketika diterapkan komposisi dua jenis transformasi geometri.","stem":"<p>Perhatikan gambar berikut.</p><svg viewBox=\"0 0 356 200\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" style=\"width:100%;max-width:420px;height:auto;display:block;margin:0 auto\" aria-label=\"Bidang koordinat\"><rect x=\"0\" y=\"0\" width=\"356\" height=\"200\" fill=\"#fff\"/><line x1=\"22\" y1=\"22\" x2=\"22\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"48\" y1=\"22\" x2=\"48\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"74\" y1=\"22\" x2=\"74\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"100\" y1=\"22\" x2=\"100\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"126\" y1=\"22\" x2=\"126\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"152\" y1=\"22\" x2=\"152\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"178\" y1=\"22\" x2=\"178\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"204\" y1=\"22\" x2=\"204\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"230\" y1=\"22\" x2=\"230\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"256\" y1=\"22\" x2=\"256\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"282\" y1=\"22\" x2=\"282\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"308\" y1=\"22\" x2=\"308\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"334\" y1=\"22\" x2=\"334\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"178\" x2=\"334\" y2=\"178\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"152\" x2=\"334\" y2=\"152\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"126\" x2=\"334\" y2=\"126\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"100\" x2=\"334\" y2=\"100\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"74\" x2=\"334\" y2=\"74\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"48\" x2=\"334\" y2=\"48\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"22\" x2=\"334\" y2=\"22\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"100\" x2=\"342\" y2=\"100\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><line x1=\"178\" y1=\"178\" x2=\"178\" y2=\"14\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><path d=\"M342 100 l-6 -3 v6 z\" fill=\"#0f172a\"/><path d=\"M178 14 l-3 6 h6 z\" fill=\"#0f172a\"/><text x=\"22\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-6</text><text x=\"48\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-5</text><text x=\"74\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"100\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"126\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"152\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"204\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"230\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"256\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"282\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"308\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"334\" y=\"113\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"173\" y=\"181.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"173\" y=\"155.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"173\" y=\"129.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"173\" y=\"77.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"173\" y=\"51.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"173\" y=\"25.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"173\" y=\"113\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">0</text><circle cx=\"74\" cy=\"74\" r=\"5\" fill=\"#15803d\"/><text x=\"83\" y=\"68\" font-size=\"15\" font-weight=\"600\" fill=\"#15803d\" font-family=\"Arial,sans-serif\">B'</text></svg>","post":"<p>Titik B direfleksikan oleh garis $y=1$, kemudian dirotasi dengan pusat di $O(0,0)$ sebesar $180^\\circ$ searah jarum jam. Titik B' pada gambar merupakan bayangan titik B hasil komposisi kedua transformasi tersebut. Gambar titik B yang sesuai adalah ....</p>","options":["<svg viewBox=\"0 0 296 254\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" style=\"width:100%;max-width:280px;height:auto;display:block;margin:0 auto\" aria-label=\"Bidang koordinat\"><rect x=\"0\" y=\"0\" width=\"296\" height=\"254\" fill=\"#fff\"/><line x1=\"22\" y1=\"22\" x2=\"22\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"43\" y1=\"22\" x2=\"43\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"64\" y1=\"22\" x2=\"64\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"85\" y1=\"22\" x2=\"85\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"106\" y1=\"22\" x2=\"106\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"127\" y1=\"22\" x2=\"127\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"148\" y1=\"22\" x2=\"148\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"169\" y1=\"22\" x2=\"169\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"190\" y1=\"22\" x2=\"190\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"211\" y1=\"22\" x2=\"211\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"232\" y1=\"22\" x2=\"232\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"253\" y1=\"22\" x2=\"253\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"274\" y1=\"22\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"232\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"211\" x2=\"274\" y2=\"211\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"190\" x2=\"274\" y2=\"190\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"169\" x2=\"274\" y2=\"169\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"274\" y2=\"148\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"127\" x2=\"274\" y2=\"127\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"106\" x2=\"274\" y2=\"106\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"85\" x2=\"274\" y2=\"85\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"64\" x2=\"274\" y2=\"64\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"43\" x2=\"274\" y2=\"43\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"22\" x2=\"274\" y2=\"22\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"282\" y2=\"148\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><line x1=\"148\" y1=\"232\" x2=\"148\" y2=\"14\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><path d=\"M282 148 l-6 -3 v6 z\" fill=\"#0f172a\"/><path d=\"M148 14 l-3 6 h6 z\" fill=\"#0f172a\"/><text x=\"22\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-6</text><text x=\"43\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-5</text><text x=\"64\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"85\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"106\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"127\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"169\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"190\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"211\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"232\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"253\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"274\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"235.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"143\" y=\"214.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"143\" y=\"193.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"143\" y=\"172.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"143\" y=\"130.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"143\" y=\"109.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"143\" y=\"88.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"143\" y=\"67.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"143\" y=\"46.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"143\" y=\"25.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"161\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">0</text><circle cx=\"232\" cy=\"169\" r=\"5\" fill=\"#2563eb\"/><text x=\"241\" y=\"163\" font-size=\"15\" font-weight=\"600\" fill=\"#2563eb\" font-family=\"Arial,sans-serif\">B</text></svg>","<svg viewBox=\"0 0 296 254\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" style=\"width:100%;max-width:280px;height:auto;display:block;margin:0 auto\" aria-label=\"Bidang koordinat\"><rect x=\"0\" y=\"0\" width=\"296\" height=\"254\" fill=\"#fff\"/><line x1=\"22\" y1=\"22\" x2=\"22\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"43\" y1=\"22\" x2=\"43\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"64\" y1=\"22\" x2=\"64\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"85\" y1=\"22\" x2=\"85\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"106\" y1=\"22\" x2=\"106\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"127\" y1=\"22\" x2=\"127\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"148\" y1=\"22\" x2=\"148\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"169\" y1=\"22\" x2=\"169\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"190\" y1=\"22\" x2=\"190\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"211\" y1=\"22\" x2=\"211\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"232\" y1=\"22\" x2=\"232\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"253\" y1=\"22\" x2=\"253\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"274\" y1=\"22\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"232\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"211\" x2=\"274\" y2=\"211\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"190\" x2=\"274\" y2=\"190\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"169\" x2=\"274\" y2=\"169\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"274\" y2=\"148\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"127\" x2=\"274\" y2=\"127\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"106\" x2=\"274\" y2=\"106\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"85\" x2=\"274\" y2=\"85\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"64\" x2=\"274\" y2=\"64\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"43\" x2=\"274\" y2=\"43\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"22\" x2=\"274\" y2=\"22\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"282\" y2=\"148\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><line x1=\"148\" y1=\"232\" x2=\"148\" y2=\"14\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><path d=\"M282 148 l-6 -3 v6 z\" fill=\"#0f172a\"/><path d=\"M148 14 l-3 6 h6 z\" fill=\"#0f172a\"/><text x=\"22\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-6</text><text x=\"43\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-5</text><text x=\"64\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"85\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"106\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"127\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"169\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"190\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"211\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"232\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"253\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"274\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"235.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"143\" y=\"214.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"143\" y=\"193.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"143\" y=\"172.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"143\" y=\"130.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"143\" y=\"109.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"143\" y=\"88.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"143\" y=\"67.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"143\" y=\"46.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"143\" y=\"25.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"161\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">0</text><circle cx=\"232\" cy=\"85\" r=\"5\" fill=\"#2563eb\"/><text x=\"241\" y=\"79\" font-size=\"15\" font-weight=\"600\" fill=\"#2563eb\" font-family=\"Arial,sans-serif\">B</text></svg>","<svg viewBox=\"0 0 296 254\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" style=\"width:100%;max-width:280px;height:auto;display:block;margin:0 auto\" aria-label=\"Bidang koordinat\"><rect x=\"0\" y=\"0\" width=\"296\" height=\"254\" fill=\"#fff\"/><line x1=\"22\" y1=\"22\" x2=\"22\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"43\" y1=\"22\" x2=\"43\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"64\" y1=\"22\" x2=\"64\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"85\" y1=\"22\" x2=\"85\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"106\" y1=\"22\" x2=\"106\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"127\" y1=\"22\" x2=\"127\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"148\" y1=\"22\" x2=\"148\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"169\" y1=\"22\" x2=\"169\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"190\" y1=\"22\" x2=\"190\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"211\" y1=\"22\" x2=\"211\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"232\" y1=\"22\" x2=\"232\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"253\" y1=\"22\" x2=\"253\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"274\" y1=\"22\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"232\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"211\" x2=\"274\" y2=\"211\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"190\" x2=\"274\" y2=\"190\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"169\" x2=\"274\" y2=\"169\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"274\" y2=\"148\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"127\" x2=\"274\" y2=\"127\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"106\" x2=\"274\" y2=\"106\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"85\" x2=\"274\" y2=\"85\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"64\" x2=\"274\" y2=\"64\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"43\" x2=\"274\" y2=\"43\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"22\" x2=\"274\" y2=\"22\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"282\" y2=\"148\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><line x1=\"148\" y1=\"232\" x2=\"148\" y2=\"14\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><path d=\"M282 148 l-6 -3 v6 z\" fill=\"#0f172a\"/><path d=\"M148 14 l-3 6 h6 z\" fill=\"#0f172a\"/><text x=\"22\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-6</text><text x=\"43\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-5</text><text x=\"64\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"85\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"106\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"127\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"169\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"190\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"211\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"232\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"253\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"274\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"235.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"143\" y=\"214.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"143\" y=\"193.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"143\" y=\"172.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"143\" y=\"130.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"143\" y=\"109.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"143\" y=\"88.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"143\" y=\"67.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"143\" y=\"46.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"143\" y=\"25.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"161\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">0</text><circle cx=\"22\" cy=\"169\" r=\"5\" fill=\"#2563eb\"/><text x=\"31\" y=\"163\" font-size=\"15\" font-weight=\"600\" fill=\"#2563eb\" font-family=\"Arial,sans-serif\">B</text></svg>","<svg viewBox=\"0 0 296 254\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" style=\"width:100%;max-width:280px;height:auto;display:block;margin:0 auto\" aria-label=\"Bidang koordinat\"><rect x=\"0\" y=\"0\" width=\"296\" height=\"254\" fill=\"#fff\"/><line x1=\"22\" y1=\"22\" x2=\"22\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"43\" y1=\"22\" x2=\"43\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"64\" y1=\"22\" x2=\"64\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"85\" y1=\"22\" x2=\"85\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"106\" y1=\"22\" x2=\"106\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"127\" y1=\"22\" x2=\"127\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"148\" y1=\"22\" x2=\"148\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"169\" y1=\"22\" x2=\"169\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"190\" y1=\"22\" x2=\"190\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"211\" y1=\"22\" x2=\"211\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"232\" y1=\"22\" x2=\"232\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"253\" y1=\"22\" x2=\"253\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"274\" y1=\"22\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"232\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"211\" x2=\"274\" y2=\"211\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"190\" x2=\"274\" y2=\"190\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"169\" x2=\"274\" y2=\"169\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"274\" y2=\"148\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"127\" x2=\"274\" y2=\"127\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"106\" x2=\"274\" y2=\"106\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"85\" x2=\"274\" y2=\"85\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"64\" x2=\"274\" y2=\"64\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"43\" x2=\"274\" y2=\"43\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"22\" x2=\"274\" y2=\"22\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"282\" y2=\"148\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><line x1=\"148\" y1=\"232\" x2=\"148\" y2=\"14\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><path d=\"M282 148 l-6 -3 v6 z\" fill=\"#0f172a\"/><path d=\"M148 14 l-3 6 h6 z\" fill=\"#0f172a\"/><text x=\"22\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-6</text><text x=\"43\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-5</text><text x=\"64\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"85\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"106\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"127\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"169\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"190\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"211\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"232\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"253\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"274\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"235.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"143\" y=\"214.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"143\" y=\"193.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"143\" y=\"172.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"143\" y=\"130.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"143\" y=\"109.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"143\" y=\"88.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"143\" y=\"67.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"143\" y=\"46.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"143\" y=\"25.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"161\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">0</text><circle cx=\"106\" cy=\"169\" r=\"5\" fill=\"#2563eb\"/><text x=\"115\" y=\"163\" font-size=\"15\" font-weight=\"600\" fill=\"#2563eb\" font-family=\"Arial,sans-serif\">B</text></svg>","<svg viewBox=\"0 0 296 254\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" style=\"width:100%;max-width:280px;height:auto;display:block;margin:0 auto\" aria-label=\"Bidang koordinat\"><rect x=\"0\" y=\"0\" width=\"296\" height=\"254\" fill=\"#fff\"/><line x1=\"22\" y1=\"22\" x2=\"22\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"43\" y1=\"22\" x2=\"43\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"64\" y1=\"22\" x2=\"64\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"85\" y1=\"22\" x2=\"85\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"106\" y1=\"22\" x2=\"106\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"127\" y1=\"22\" x2=\"127\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"148\" y1=\"22\" x2=\"148\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"169\" y1=\"22\" x2=\"169\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"190\" y1=\"22\" x2=\"190\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"211\" y1=\"22\" x2=\"211\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"232\" y1=\"22\" x2=\"232\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"253\" y1=\"22\" x2=\"253\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"274\" y1=\"22\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"232\" x2=\"274\" y2=\"232\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"211\" x2=\"274\" y2=\"211\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"190\" x2=\"274\" y2=\"190\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"169\" x2=\"274\" y2=\"169\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"274\" y2=\"148\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"127\" x2=\"274\" y2=\"127\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"106\" x2=\"274\" y2=\"106\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"85\" x2=\"274\" y2=\"85\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"64\" x2=\"274\" y2=\"64\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"43\" x2=\"274\" y2=\"43\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"22\" x2=\"274\" y2=\"22\" stroke=\"#cbd5e1\" stroke-width=\"1\"/><line x1=\"22\" y1=\"148\" x2=\"282\" y2=\"148\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><line x1=\"148\" y1=\"232\" x2=\"148\" y2=\"14\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><path d=\"M282 148 l-6 -3 v6 z\" fill=\"#0f172a\"/><path d=\"M148 14 l-3 6 h6 z\" fill=\"#0f172a\"/><text x=\"22\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-6</text><text x=\"43\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-5</text><text x=\"64\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"85\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"106\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"127\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"169\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"190\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"211\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"232\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"253\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"274\" y=\"161\" font-size=\"9.5\" text-anchor=\"middle\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"235.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-4</text><text x=\"143\" y=\"214.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-3</text><text x=\"143\" y=\"193.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-2</text><text x=\"143\" y=\"172.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">-1</text><text x=\"143\" y=\"130.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">1</text><text x=\"143\" y=\"109.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">2</text><text x=\"143\" y=\"88.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">3</text><text x=\"143\" y=\"67.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">4</text><text x=\"143\" y=\"46.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">5</text><text x=\"143\" y=\"25.4\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">6</text><text x=\"143\" y=\"161\" font-size=\"9.5\" text-anchor=\"end\" fill=\"#334155\" font-family=\"Arial,sans-serif\">0</text><circle cx=\"190\" cy=\"64\" r=\"5\" fill=\"#2563eb\"/><text x=\"199\" y=\"58\" font-size=\"15\" font-weight=\"600\" fill=\"#2563eb\" font-family=\"Arial,sans-serif\">B</text></svg>"],"answer":1,"explanation":"<p>Kerjakan secara berbalik (invers) dari titik bayangan $B'(-4,1)$.</p>\n<ol>\n<li><b>Balikkan rotasi $180^\\circ$ pusat $O$.</b> Rotasi $180^\\circ$ memetakan $(x,y)\\to(-x,-y)$ (searah atau berlawanan arah hasilnya sama). Titik sebelum rotasi: $(4,-1)$.</li>\n<li><b>Balikkan refleksi terhadap $y=1$.</b> Refleksi terhadap $y=1$ memetakan $(x,y)\\to(x,\\,2-y)$. Titik asal: $B=(4,\\,2-(-1))=(4,3)$.</li>\n</ol>\n<p>Pengecekan: $B(4,3)\\xrightarrow{\\;y=1\\;}(4,-1)\\xrightarrow{\\;180^\\circ\\;}(-4,1)=B'$ &#10003;. Gambar yang sesuai adalah titik $B(4,3)$.</p>","no":4},{"code":"26MATGMPUKRM18SU-000000-1015","level":"MOTS","type":"pg","elemen":"Geometri dan Pengukuran","sub":"Pengukuran","ind":"Menyelesaikan permasalahan kontekstual sehari-hari yang melibatkan jarak dua titik dalam suatu bangun ruang.","stem":"<p>Aula SMA Tunas Bangsa baru saja direnovasi. Panitia perpisahan ingin menghias aula tersebut dengan memasang tali hiasan dari sudut bawah dinding pintu masuk menuju sebuah titik di langit-langit pada dinding seberang. Jarak mendatar dari titik di lantai menuju titik yang tepat berada di bawah target di langit-langit adalah 12 m, dan tinggi langit-langit aula adalah 5 m, seperti pada ilustrasi berikut.</p><svg viewBox=\"0 0 360 225\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:360px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><polygon points=\"140,25 310,25 310,135 140,135\" fill=\"#f8fafc\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><line x1=\"30\" y1=\"80\" x2=\"140\" y2=\"25\" stroke=\"#0f172a\" stroke-width=\"1.2\" /><line x1=\"200\" y1=\"80\" x2=\"310\" y2=\"25\" stroke=\"#0f172a\" stroke-width=\"1.2\" /><line x1=\"200\" y1=\"190\" x2=\"310\" y2=\"135\" stroke=\"#0f172a\" stroke-width=\"1.2\" /><line x1=\"30\" y1=\"190\" x2=\"140\" y2=\"135\" stroke=\"#0f172a\" stroke-width=\"1.2\" stroke-dasharray=\"5 4\"/><polygon points=\"30,80 200,80 200,190 30,190\" fill=\"#eff6ff\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><line x1=\"30\" y1=\"190\" x2=\"225\" y2=\"135\" stroke=\"#475569\" stroke-width=\"1.4\" stroke-dasharray=\"5 4\"/><line x1=\"225\" y1=\"25\" x2=\"225\" y2=\"135\" stroke=\"#475569\" stroke-width=\"1.4\" stroke-dasharray=\"5 4\"/><line x1=\"30\" y1=\"190\" x2=\"225\" y2=\"25\" stroke=\"#dc2626\" stroke-width=\"2.6\" /><circle cx=\"225\" cy=\"25\" r=\"4\" fill=\"#dc2626\"/><text x=\"150\" y=\"178\" text-anchor=\"middle\">12 m</text><text x=\"233\" y=\"85\" >5 m</text><text x=\"85\" y=\"100\" font-size=\"11\" fill=\"#dc2626\">tali hiasan</text><text x=\"115\" y=\"208\" text-anchor=\"middle\">dinding pintu masuk</text><text x=\"225\" y=\"15\" text-anchor=\"middle\" font-size=\"11\">dinding papan tulis</text></svg>","post":"<p>Mereka akan membuat tali kedua yang sama seperti tali hiasan pertama untuk dipasang ke pojok yang lain pada dinding pintu.</p><p>Apabila mereka membeli gulungan tali yang panjangnya 30 meter, berapakah sisa tali yang tidak terpakai?</p>","options":["2 m.","4 m.","6 m.","9 m.","17 m."],"answer":1,"explanation":"<p>Panjang satu tali adalah jarak lurus dari titik di lantai ke titik di langit-langit (jarak mendatar $12$ m, tinggi $5$ m):</p>$$\\sqrt{12^2+5^2}=\\sqrt{169}=13\\text{ m}$$<p>Dua tali yang sama memerlukan $2\\times13=26$ m, sehingga sisa tali $=30-26=$ <b>4 m</b>.</p>","no":5},{"code":"26MATGMPUKRM16SU-000000-1016","level":"MOTS","type":"pg","elemen":"Geometri dan Pengukuran","sub":"Pengukuran","ind":"Menyelesaikan permasalahan kontekstual sehari-hari yang melibatkan perhitungan keliling gabungan bangun datar.","stem":"<p>Wulan, seorang desainer interior, akan membuat suatu desain ornamen jam dinding baru. Ornamen tersebut memiliki bentuk dasar gabungan segitiga sama kaki dan setengah lingkaran. Adapun bentuk ornamen jam dan ukuran yang akan dibuat diberikan pada gambar berikut.</p><svg viewBox=\"0 0 300 290\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:300px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><polygon points=\"126,20 30,148 222,148\" fill=\"#5eead4\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><path d=\"M30 148 A96 96 0 0 0 222 148 Z\" fill=\"#5eead4\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><circle cx=\"126\" cy=\"200\" r=\"40\" fill=\"#fff\" stroke=\"#0f172a\"/><line x1=\"126\" y1=\"200\" x2=\"126\" y2=\"174\" stroke=\"#0f172a\" stroke-width=\"2\" /><line x1=\"126\" y1=\"200\" x2=\"152\" y2=\"200\" stroke=\"#0f172a\" stroke-width=\"2\" /><line x1=\"255\" y1=\"20\" x2=\"255\" y2=\"148\" stroke=\"#475569\" stroke-width=\"1.2\" /><line x1=\"250\" y1=\"20\" x2=\"260\" y2=\"20\" stroke=\"#475569\" stroke-width=\"1.2\" /><line x1=\"250\" y1=\"148\" x2=\"260\" y2=\"148\" stroke=\"#475569\" stroke-width=\"1.2\" /><text x=\"263\" y=\"88\" >16 cm</text><line x1=\"30\" y1=\"270\" x2=\"222\" y2=\"270\" stroke=\"#475569\" stroke-width=\"1.2\" /><line x1=\"30\" y1=\"265\" x2=\"30\" y2=\"275\" stroke=\"#475569\" stroke-width=\"1.2\" /><line x1=\"222\" y1=\"265\" x2=\"222\" y2=\"275\" stroke=\"#475569\" stroke-width=\"1.2\" /><text x=\"126\" y=\"286\" text-anchor=\"middle\">24 cm</text></svg>","post":"<p>Sisi miring segitiga pada ornamen tersebut memiliki panjang 20 cm. Di sekeliling ornamen jam akan ditempel kayu tipis untuk menambah efek tiga dimensi.</p><p>Apabila Wulan akan membuat dua buah ornamen jam dinding untuk dijadikan model contoh, berapa panjang kayu tipis yang ia perlukan? (gunakan $\\pi=3{,}14$)</p>","options":["140,36 cm.","150,36 cm.","155,36 cm.","160,36 cm.","170,36 cm."],"answer":2,"explanation":"<p>Alas segitiga = diameter setengah lingkaran $=24$ cm, sehingga $r=12$ cm. Kayu tipis dipasang mengelilingi ornamen: dua sisi miring segitiga ditambah busur setengah lingkaran (alas segitiga tidak dihitung).</p>$$K=2(20)+\\pi r=40+3{,}14(12)=40+37{,}68=77{,}68\\text{ cm}$$<p>Untuk dua ornamen: $2\\times77{,}68=$ <b>155,36 cm</b>.</p>","no":6},{"code":"26MATGMPUKRM16SU-000000-1017","level":"HOTS","type":"pg","elemen":"Geometri dan Pengukuran","sub":"Pengukuran","ind":"Menggunakan keterkaitan antara konsep keliling dan luas dari suatu bangun datar dalam menyelesaikan suatu permasalahan matematika atau permasalahan kontekstual sehari-hari.","stem":"<p>Perhatikan permasalahan dalam kotak berikut!</p><div class=\"q-box\">Panjang salah satu diagonal suatu layang-layang adalah 26 cm.</div><svg viewBox=\"0 0 260 270\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:260px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><polygon points=\"130,15 200,105 130,255 60,105\" fill=\"none\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><line x1=\"130\" y1=\"15\" x2=\"130\" y2=\"255\" stroke=\"#0f172a\" stroke-width=\"1\" /><line x1=\"60\" y1=\"105\" x2=\"200\" y2=\"105\" stroke=\"#0f172a\" stroke-width=\"1\" /></svg>","post":"<p>Berapakah keliling layang-layang tersebut?</p><p>Putuskan apakah pernyataan (1) dan pernyataan (2) berikut cukup untuk menjawab permasalahan dalam kotak tersebut!</p><p>(1) Luas layang-layang adalah 195 cm&sup2;.<br>(2) Panjang salah satu sisi layang-layang adalah 12,5 cm.</p>","options":["Pernyataan (1) SAJA cukup untuk menjawab pertanyaan, tetapi pernyataan (2) SAJA tidak cukup.","Pernyataan (2) SAJA cukup untuk menjawab pertanyaan, tetapi pernyataan (1) SAJA tidak cukup.","DUA pernyataan BERSAMA-SAMA cukup untuk menjawab pertanyaan, tetapi SATU pernyataan SAJA tidak cukup.","Pernyataan (1) SAJA cukup untuk menjawab pertanyaan dan pernyataan (2) SAJA cukup.","Pernyataan (1) dan pernyataan (2) tidak cukup untuk menjawab pertanyaan."],"answer":2,"explanation":"<p>Layang-layang punya satu sumbu simetri (diagonal panjang $d_1=26$ cm) yang membagi diagonal pendek $d_2$ menjadi dua bagian sama panjang, tetapi $d_1$ sendiri terbagi menjadi dua bagian $p$ dan $q$ yang <i>tidak</i> sama panjang.</p><ul><li><b>Pernyataan (1) saja:</b> $L=\\frac12 d_1d_2\\Rightarrow d_2=\\frac{2\\cdot195}{26}=15$ cm, tetapi $p$ dan $q$ (sehingga panjang sisi-sisinya) belum diketahui &rarr; <b>tidak cukup</b>.</li><li><b>Pernyataan (2) saja:</b> satu sisi $12{,}5$ cm tidak memberi informasi tentang $d_2$ maupun sisi pasangannya &rarr; <b>tidak cukup</b>.</li><li><b>Keduanya bersama:</b> setengah $d_2=7{,}5$ cm. Dari sisi $12{,}5$ cm diperoleh $p=\\sqrt{12{,}5^2-7{,}5^2}=10$ cm, sehingga $q=26-10=16$ cm dan sisi lainnya $\\sqrt{16^2+7{,}5^2}$ dapat dihitung. Keliling dapat ditentukan &rarr; <b>cukup</b>.</li></ul><p>Jadi dua pernyataan <b>bersama-sama cukup</b>, tetapi satu pernyataan saja tidak cukup.</p>","no":7},{"code":"26MATGMPUKRM17SU-000000-1018","level":"HOTS","type":"pg","elemen":"Geometri dan Pengukuran","sub":"Pengukuran","ind":"Menyelesaikan permasalahan kontekstual sehari-hari dengan menerapkan konsep volume bangun ruang dan gabungannya.","stem":"<p>Bu Wati adalah seorang distributor helm. Hari ini, ia mendapat pesanan untuk mengirimkan helm yang sama dalam jumlah besar menggunakan truk. Agar kualitas terjaga, helm dikemas dalam wadah kardus helm. Adapun ukuran kardus helm dan bak truk diberikan pada gambar berikut.</p><svg viewBox=\"0 0 400 215\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:400px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><polygon points=\"20,100 80,100 80,160 20,160\" fill=\"#fed7aa\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><polygon points=\"20,100 40,84 100,84 80,100\" fill=\"#fdba74\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><polygon points=\"80,100 100,84 100,144 80,160\" fill=\"#ffedd5\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><text x=\"50\" y=\"134\" text-anchor=\"middle\" font-size=\"10\">Kardus</text><text x=\"50\" y=\"146\" text-anchor=\"middle\" font-size=\"10\">helm</text><text x=\"40\" y=\"178\" text-anchor=\"middle\">30 cm</text><text x=\"98\" y=\"178\" text-anchor=\"middle\">25 cm</text><text x=\"12\" y=\"132\" text-anchor=\"middle\" transform=\"rotate(-90 12 132)\">30 cm</text><line x1=\"112\" y1=\"95\" x2=\"150\" y2=\"95\" stroke=\"#0f172a\" stroke-width=\"1.5\" /><path d=\"M152 95 l-7 -4 v8 z\" fill=\"#0f172a\"/><polygon points=\"170,70 320,70 320,170 170,170\" fill=\"#bfdbfe\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><polygon points=\"170,70 220,40 370,40 320,70\" fill=\"#93c5fd\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><polygon points=\"320,70 370,40 370,140 320,170\" fill=\"#dbeafe\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><text x=\"245\" y=\"124\" text-anchor=\"middle\">Bak truk</text><text x=\"245\" y=\"192\" text-anchor=\"middle\">260 cm</text><text x=\"160\" y=\"124\" text-anchor=\"middle\" transform=\"rotate(-90 160 124)\">180 cm</text><text x=\"354\" y=\"168\" text-anchor=\"middle\" transform=\"rotate(-31 354 168)\">200 cm</text></svg>","post":"<p>Bu Wati memberikan arahan pada kurir untuk mengatur posisi kardus helm tidak boleh dibalik (bagian atas kardus harus tetap menghadap ke atas). Kardus disusun menghadap searah dengan sisi panjang atau sisi lebar bak truk sehingga seluruh alas bak truk terisi penuh tanpa sisa ruang kosong yang dapat memuat kardus tambahan.</p><p>Berdasarkan posisi susunan tersebut, berapa paling banyak kardus helm yang dapat dimuat di truk tersebut?</p>","options":["320 kardus.","352 kardus.","384 kardus.","416 kardus.","448 kardus."],"answer":2,"explanation":"<p>Kardus berukuran $30\\times25\\times30$ cm (tinggi $30$ cm tetap karena tidak boleh dibalik); bak truk berukuran $260\\times200\\times180$ cm.</p><ul><li>Arah tinggi: $180\\div30=6$ lapisan (tanpa sisa).</li><li>Alas $260\\times200$ cm dengan jejak kardus $30\\times25$ cm: sepanjang $260$ cm memuat $\\lfloor260\\div30\\rfloor=8$ kardus (sisa $20$ cm), sepanjang $200$ cm memuat $200\\div25=8$ kardus, sehingga $8\\times8=64$ kardus per lapisan.</li><li>Sisa ruang $20\\times200$ cm tidak dapat memuat kardus tambahan karena sisi terkecil alas kardus $25$ cm.</li></ul><p>Total $=64\\times6=$ <b>384 kardus</b>.</p>","no":8},{"code":"26MATGMPUKRM17SU-000000-1019","level":"MOTS","type":"pg","elemen":"Geometri dan Pengukuran","sub":"Pengukuran","ind":"Menyelesaikan permasalahan kontekstual sehari-hari yang melibatkan perhitungan luas permukaan bangun ruang sisi lengkung.","stem":"<p>Bu Sita, seorang desainer interior, sedang mengerjakan proyek pribadi untuk mempercantik kamar tidurnya. Ia berencana membuat beberapa hiasan lampu tidur dari bahan akrilik. Setiap hiasan akan berbentuk tabung berongga (tanpa alas dan tutup) dengan diameter 14 cm dan tinggi 20 cm. Bagian luar tabung ini akan dilapisi dengan stiker vinil motif bunga, seperti pada gambar berikut.</p><svg viewBox=\"0 0 250 300\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:250px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><path d=\"M40 60 V260 A70 14 0 0 0 180 260 V60\" fill=\"none\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><ellipse cx=\"110\" cy=\"60\" rx=\"70\" ry=\"14\" fill=\"#fff\" stroke=\"#0f172a\" stroke-width=\"1.6\"/><ellipse cx=\"110\" cy=\"110\" rx=\"68\" ry=\"11\" fill=\"none\" stroke=\"#99f6e4\" stroke-width=\"6\"/><ellipse cx=\"110\" cy=\"150\" rx=\"68\" ry=\"11\" fill=\"none\" stroke=\"#99f6e4\" stroke-width=\"6\"/><ellipse cx=\"110\" cy=\"190\" rx=\"68\" ry=\"11\" fill=\"none\" stroke=\"#99f6e4\" stroke-width=\"6\"/><ellipse cx=\"110\" cy=\"230\" rx=\"68\" ry=\"11\" fill=\"none\" stroke=\"#99f6e4\" stroke-width=\"6\"/><line x1=\"40\" y1=\"28\" x2=\"180\" y2=\"28\" stroke=\"#475569\" stroke-width=\"1.2\" /><line x1=\"40\" y1=\"23\" x2=\"40\" y2=\"33\" stroke=\"#475569\" stroke-width=\"1.2\" /><line x1=\"180\" y1=\"23\" x2=\"180\" y2=\"33\" stroke=\"#475569\" stroke-width=\"1.2\" /><text x=\"110\" y=\"20\" text-anchor=\"middle\">d = 14 cm</text><line x1=\"210\" y1=\"60\" x2=\"210\" y2=\"260\" stroke=\"#475569\" stroke-width=\"1.2\" /><line x1=\"205\" y1=\"60\" x2=\"215\" y2=\"60\" stroke=\"#475569\" stroke-width=\"1.2\" /><line x1=\"205\" y1=\"260\" x2=\"215\" y2=\"260\" stroke=\"#475569\" stroke-width=\"1.2\" /><text x=\"218\" y=\"164\" >20 cm</text></svg>","post":"<p>Stiker vinil dijual dalam lembaran, dan harga satu lembarnya adalah Rp10.000,00. Setiap lembar stiker vinil mampu menutupi area seluas 300 cm&sup2;. Jika Bu Sita berencana membuat 8 buah hiasan lampu tidur, berapakah biaya minimal yang harus dikeluarkan Bu Sita untuk membeli stiker vinil tersebut? (gunakan $\\pi=\\frac{22}{7}$)</p>","options":["Rp210.000,00.","Rp230.000,00.","Rp240.000,00.","Rp250.000,00.","Rp270.000,00."],"answer":2,"explanation":"<p>Tabung tanpa alas dan tutup, sehingga hanya selimutnya yang dilapisi stiker:</p>$$L=\\pi dt=\\frac{22}{7}\\times14\\times20=880\\text{ cm}^2$$<p>Untuk 8 hiasan: $8\\times880=7.040$ cm&sup2;. Banyak lembar stiker: $7.040\\div300\\approx23{,}47$ &rarr; dibulatkan ke atas menjadi <b>24 lembar</b> agar seluruh permukaan tertutup.</p><p>Biaya minimal $=24\\times\\text{Rp}10.000=$ <b>Rp240.000,00</b>.</p>","no":9},{"code":"26MATGMPTRIM19SU-000000-1020","level":"MOTS","type":"kat","elemen":"Geometri dan Pengukuran","sub":"Perbandingan Trigonometri","ind":"Menentukan suatu nilai perbandingan trigonometri apabila diketahui nilai perbandingan trigonometri lainnya.","stem":"<p>Perhatikan gambar berikut.</p><svg viewBox=\"0 0 360 235\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Ilustrasi soal\" style=\"width:100%;max-width:360px;height:auto;display:block;margin:.6rem auto\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#334155\"><polygon points=\"150,65 31,200 330,200\" fill=\"none\" stroke=\"#0f172a\" stroke-width=\"1.6\" stroke-linejoin=\"round\" /><line x1=\"150\" y1=\"65\" x2=\"150\" y2=\"200\" stroke=\"#0f172a\" stroke-width=\"1.6\" /><path d=\"M150 188 H162 V200\" fill=\"none\" stroke=\"#0f172a\"/><text x=\"146\" y=\"56\" font-weight=\"700\" fill=\"#0f172a\">A</text><text x=\"14\" y=\"214\" font-weight=\"700\" fill=\"#0f172a\">B</text><text x=\"334\" y=\"214\" font-weight=\"700\" fill=\"#0f172a\">C</text><text x=\"146\" y=\"218\" font-weight=\"700\" fill=\"#0f172a\">D</text><text x=\"68\" y=\"124\" >4 cm</text><text x=\"248\" y=\"122\" >5 cm</text><text x=\"156\" y=\"96\" font-style=\"italic\" fill=\"#15803d\">&alpha;</text><text x=\"50\" y=\"192\" font-style=\"italic\" fill=\"#15803d\">&beta;</text></svg>","post":"<p>Pada segitiga ABC, garis AD adalah garis tinggi yang tegak lurus BC, dengan AB = 4 cm dan AC = 5 cm. Jika diketahui nilai $\\cos(\\alpha)=\\frac{3}{5}$, tentukan <b>Benar</b> atau <b>Salah</b> terkait perbandingan trigonometri berikut!</p>","statements":["$\\sin(\\beta)=\\dfrac{3}{4}$","$\\cos(\\beta)=\\dfrac{\\sqrt{7}}{5}$","$\\tan(\\beta)=\\dfrac{3\\sqrt{7}}{7}$"],"answer":["B","S","B"],"explanation":"<p>Pada segitiga siku-siku $ADC$: $\\cos\\alpha=\\frac{AD}{AC}=\\frac35$, sehingga $AD=3$ cm (untuk $AC=5$ cm) dan $DC=\\sqrt{5^2-3^2}=4$ cm.</p><p>Pada segitiga siku-siku $ABD$ dengan $AB=4$ cm dan $AD=3$ cm:</p>$$BD=\\sqrt{AB^2-AD^2}=\\sqrt{4^2-3^2}=\\sqrt7\\text{ cm}$$$$\\sin\\beta=\\frac{AD}{AB}=\\frac34,\\qquad\\cos\\beta=\\frac{BD}{AB}=\\frac{\\sqrt7}{4},\\qquad\\tan\\beta=\\frac{AD}{BD}=\\frac{3}{\\sqrt7}=\\frac{3\\sqrt7}{7}$$<ol><li>$\\sin\\beta=\\frac34$ &rarr; <b>Benar</b>.</li><li>$\\cos\\beta=\\frac{\\sqrt7}{4}$, bukan $\\frac{\\sqrt7}{5}$ &rarr; <b>Salah</b>.</li><li>$\\tan\\beta=\\frac{3\\sqrt7}{7}$ &rarr; <b>Benar</b>.</li></ol>","no":10}];
+</script>
+<script>
+/* ============================================================
+   Simulator Ujian & Evaluasi Interaktif — TKA Matematika 2026
+   ============================================================ */
+(function(){
+  "use strict";
+
+  const TOPIC_TITLE = "Matematika (Wajib) SMA/MA/SMK";
+  const N = EXAM_DATA.length;
+  const LEVEL_COUNTS = EXAM_DATA.reduce((a,q)=>{a[q.level]=(a[q.level]||0)+1; return a;},{});
+  const TYPE_LABELS = { pg:'Pilihan Ganda', kat:'PG Kompleks · Kategori', mcma:'PG Kompleks · MCMA' };
+  const TYPE_COUNTS = EXAM_DATA.reduce((a,q)=>{a[q.type]=(a[q.type]||0)+1; return a;},{});
+  const LETTERS = ['A','B','C','D','E','F'];
+
+  const state = {
+    screen: 'start',
+    identity: { name:'', kelas:'', sekolah:'' },
+    durationMin: 20,
+    timeLeftSec: 20*60,
+    timerId: null,
+    currentIndex: 0,
+    answers: {},        // no -> { pg: idx|null, mcma: Set, kat: [ 'B'|'S'|null, ... ] }
+    flagged: new Set(),
+    startedAt: null,
+    finishedAt: null,
+    confirmOpen: false,
+    reviewAll: false,
+    jumpMenuOpen: false,
+  };
+
+  EXAM_DATA.forEach(q=>{
+    if(q.type==='pg') state.answers[q.no] = { pg:null };
+    else if(q.type==='mcma') state.answers[q.no] = { mcma:new Set() };
+    else if(q.type==='kat') state.answers[q.no] = { kat: q.statements.map(()=>null) };
+  });
+
+  const $app = document.getElementById('app');
+
+  function esc(s){ return (s??'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmtTime(sec){
+    sec = Math.max(0, sec|0);
+    const m = Math.floor(sec/60), s = sec%60;
+    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function fmtDateTime(d){
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    return `${pad2(d.getDate())} ${bulan[d.getMonth()]} ${d.getFullYear()}, ${pad2(d.getHours())}:${pad2(d.getMinutes())} WIB`;
+  }
+
+  function isAnswered(q){
+    const a = state.answers[q.no];
+    if(q.type==='pg') return a.pg !== null;
+    if(q.type==='mcma') return a.mcma.size > 0;
+    if(q.type==='kat') return a.kat.every(v=>v!==null);
+    return false;
+  }
+  function isCorrect(q){
+    const a = state.answers[q.no];
+    if(!isAnswered(q)) return false;
+    if(q.type==='pg') return a.pg === q.answer;
+    if(q.type==='mcma'){
+      const want = new Set(q.answer);
+      if(a.mcma.size !== want.size) return false;
+      for(const v of a.mcma) if(!want.has(v)) return false;
+      return true;
+    }
+    if(q.type==='kat') return a.kat.every((v,i)=>v===q.answer[i]);
+    return false;
+  }
+  function answeredCount(){ return EXAM_DATA.filter(isAnswered).length; }
+  function correctCount(){ return EXAM_DATA.filter(q=>isAnswered(q) && isCorrect(q)).length; }
+  function wrongCount(){ return EXAM_DATA.filter(q=>isAnswered(q) && !isCorrect(q)).length; }
+  function unansweredCount(){ return N - answeredCount(); }
+  function scorePct(){ return Math.round((correctCount()/N)*100); }
+
+  function renderMathIn(el){
+    if(window.renderMathInElement){
+      try{
+        renderMathInElement(el, {
+          delimiters: [
+            {left:'$$', right:'$$', display:true},
+            {left:'$', right:'$', display:false},
+          ],
+          throwOnError:false,
+        });
+      }catch(e){ /* noop */ }
+    }
+  }
+  function mountIcons(){
+    if(window.lucide && window.lucide.createIcons){
+      try{ window.lucide.createIcons(); }catch(e){}
+    }
+  }
+
+  function icon(name, cls){
+    return `<i data-lucide="${name}" class="${cls||''}"></i>`;
+  }
+
+  /* ---------------------------------------------------------- render dispatch */
+  function render(){
+    if(state.screen==='start') $app.innerHTML = renderStart();
+    else if(state.screen==='exam') $app.innerHTML = renderExam();
+    else if(state.screen==='result') $app.innerHTML = renderResult();
+    renderMathIn($app);
+    mountIcons();
+    bindEvents();
+    if(state.screen==='exam'){
+      const active = document.querySelector('.navpill.st-active');
+      if(active) active.scrollIntoView({block:'nearest', inline:'nearest'});
+    }
+  }
+
+  /* ============================================================ START SCREEN */
+  function renderStart(){
+    const estMin = N*2;
+    return `
+    <div class="min-h-screen flex items-center justify-center px-4 py-10 sm:py-14">
+      <div class="w-full max-w-3xl">
+        <div class="bg-white border border-slateink-200 rounded-3xl shadow-card overflow-hidden anim-fade-up">
+
+          <div class="relative px-7 sm:px-10 pt-9 pb-8 bg-navy-900 grid-texture overflow-hidden">
+            <div class="absolute -right-16 -top-20 w-64 h-64 rounded-full bg-brand-600/25 blur-3xl"></div>
+            <div class="absolute -left-10 -bottom-24 w-56 h-56 rounded-full bg-brand-500/20 blur-3xl"></div>
+            <div class="relative">
+              <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-brand-100 bg-white/10 border border-white/15 rounded-full px-3 py-1">
+                ${icon('graduation-cap','w-3.5 h-3.5')} TRY OUT TKA
+              </span>
+              <h1 class="mt-4 text-white text-2xl sm:[2rem] sm:text-[1.9rem] font-extrabold leading-tight">
+                Simulator Ujian — ${TOPIC_TITLE}
+              </h1>
+              <p class="mt-2.5 text-slateink-300 text-[15px] leading-relaxed max-w-xl">
+                Latihan Tes Kemampuan Akademik dengan ${N} soal elemen Geometri dan Pengukuran (objek geometri, transformasi geometri, pengukuran, dan perbandingan trigonometri) — lengkap dengan pembahasan setiap nomor setelah ujian selesai.
+              </p>
+            </div>
+          </div>
+
+          <div class="px-7 sm:px-10 py-8 space-y-8">
+
+            <div>
+              <h2 class="text-sm font-bold text-navy-900 mb-3.5">Identitas peserta</h2>
+              <div class="grid sm:grid-cols-2 gap-3.5">
+                <label class="block sm:col-span-2">
+                  <span class="text-xs font-semibold text-slateink-600 mb-1.5 block">Nama lengkap <span class="text-bad-600">*</span></span>
+                  <input id="inp-name" type="text" placeholder="Tulis nama lengkapmu"
+                    value="${esc(state.identity.name)}"
+                    class="w-full rounded-xl border border-slateink-200 px-3.5 py-2.5 text-[15px] outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100 transition"/>
+                </label>
+                <label class="block">
+                  <span class="text-xs font-semibold text-slateink-600 mb-1.5 block">Kelas <span class="text-bad-600">*</span></span>
+                  <input id="inp-kelas" type="text" placeholder="cth. XII IPA 3"
+                    value="${esc(state.identity.kelas)}"
+                    class="w-full rounded-xl border border-slateink-200 px-3.5 py-2.5 text-[15px] outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100 transition"/>
+                </label>
+                <label class="block">
+                  <span class="text-xs font-semibold text-slateink-600 mb-1.5 block">Asal sekolah <span class="text-bad-600">*</span></span>
+                  <input id="inp-sekolah" type="text" placeholder="cth. SMA Negeri 1"
+                    value="${esc(state.identity.sekolah)}"
+                    class="w-full rounded-xl border border-slateink-200 px-3.5 py-2.5 text-[15px] outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100 transition"/>
+                </label>
+              </div>
+              <p id="form-err" class="text-xs text-bad-600 font-medium mt-2 hidden">Lengkapi nama, kelas, dan asal sekolah terlebih dahulu.</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-2xl border border-slateink-200 bg-slateink-50 px-4 py-3.5">
+                <p class="text-[11px] font-semibold text-slateink-500">Jumlah soal</p>
+                <p class="text-xl font-extrabold text-navy-900 mt-0.5 num-tab">${N}</p>
+              </div>
+              <div class="rounded-2xl border border-slateink-200 bg-slateink-50 px-4 py-3.5">
+                <p class="text-[11px] font-semibold text-slateink-500">Tingkat kesulitan</p>
+                <p class="text-[13px] font-bold text-navy-900 mt-1 leading-snug">${LEVEL_COUNTS.LOTS||0} LOTS · ${LEVEL_COUNTS.MOTS||0} MOTS · ${LEVEL_COUNTS.HOTS||0} HOTS</p>
+              </div>
+              <div class="rounded-2xl border border-slateink-200 bg-slateink-50 px-4 py-3.5">
+                <p class="text-[11px] font-semibold text-slateink-500">Tipe soal</p>
+                <p class="text-[13px] font-bold text-navy-900 mt-1 leading-snug">${TYPE_COUNTS.pg||0} PG · ${TYPE_COUNTS.mcma||0} Kompleks</p>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-bold text-navy-900">Durasi ujian</span>
+                <span id="dur-label" class="text-sm font-extrabold text-brand-600 num-tab">${state.durationMin} menit</span>
+              </div>
+              <input id="dur-slider" type="range" min="15" max="90" step="5" value="${state.durationMin}" class="w-full slider-blue"/>
+              <div class="flex justify-between text-[11px] text-slateink-400 mt-1.5">
+                <span>15 menit</span>
+                <span>Estimasi ±2 menit/soal (~${estMin} menit)</span>
+                <span>90 menit</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="px-7 sm:px-10 pb-9">
+            <button id="btn-start" class="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-600 hover:bg-brand-700 active:scale-[.99] text-white font-bold text-[15px] py-3.5 transition shadow-lg shadow-brand-600/25">
+              Mulai Ujian ${icon('arrow-right','w-4 h-4')}
+            </button>
+          </div>
+        </div>
+        <p class="text-center text-[12px] text-slateink-400 mt-5">Jawabanmu tersimpan otomatis selama sesi ujian berlangsung di perangkat ini.</p>
+      </div>
+    </div>`;
+  }
+
+  /* ============================================================= EXAM SCREEN */
+  function levelBadgeClasses(level){
+    if(level==='HOTS') return 'bg-bad-50 text-bad-700 border-bad-100';
+    if(level==='MOTS') return 'bg-warn-50 text-warn-700 border-warn-100';
+    return 'bg-good-50 text-good-700 border-good-100';
+  }
+
+  function renderQuestionBody(q){
+    let html = `<div class="prose-q math-block text-[15.5px] text-slateink-700">${q.stem||''}</div>`;
+    if(q.img_data){
+      html += `<figure class="my-4">
+        <img src="${q.img_data}" alt="${esc(q.alt||'Ilustrasi soal')}" class="mx-auto max-w-full rounded-xl border border-slateink-200 shadow-sm" loading="lazy"/>
+      </figure>`;
+    }
+    if(q.post){
+      html += `<div class="prose-q math-block text-[15.5px] text-slateink-700 mt-1">${q.post}</div>`;
+    }
+    return html;
+  }
+
+  function renderOptionsInput(q, mode){
+    // mode: 'exam' (interactive) — result screen uses a different renderer
+    const a = state.answers[q.no];
+    if(q.type==='pg'){
+      return `<div class="space-y-2.5 mt-5" data-opts>
+        ${q.options.map((opt,i)=>`
+          <label class="opt-shell ${a.pg===i?'is-selected':''}" data-pg-opt="${i}" data-qno="${q.no}">
+            <span class="opt-radio"><span class="opt-radio-dot"></span></span>
+            <span class="flex-1 text-[15px] leading-relaxed pt-0.5"><span class="font-bold text-slateink-500 mr-1.5">${LETTERS[i]}.</span>${opt}</span>
+          </label>`).join('')}
+      </div>`;
+    }
+    if(q.type==='mcma'){
+      return `<div class="mb-3 mt-5 text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-100 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
+          ${icon('mouse-pointer-click','w-3.5 h-3.5')} Klik pada setiap jawaban benar. Jawaban benar bisa lebih dari satu.
+        </div>
+      <div class="space-y-2.5" data-opts>
+        ${q.options.map((opt,i)=>`
+          <label class="opt-shell ${a.mcma.has(i)?'is-selected':''}" data-mcma-opt="${i}" data-qno="${q.no}">
+            <span class="opt-check">${a.mcma.has(i)?icon('check','w-3.5 h-3.5 text-white'):''}</span>
+            <span class="flex-1 text-[15px] leading-relaxed pt-0.5"><span class="font-bold text-slateink-500 mr-1.5">${LETTERS[i]}.</span>${opt}</span>
+          </label>`).join('')}
+      </div>`;
+    }
+    if(q.type==='kat'){
+      return `<div class="mt-5 overflow-x-auto rounded-xl border border-slateink-200">
+        <table class="w-full text-sm">
+          <thead><tr class="bg-brand-50">
+            <th class="text-left font-bold text-brand-700 px-4 py-2.5">Pernyataan</th>
+            <th class="font-bold text-brand-700 px-4 py-2.5 w-24">Benar</th>
+            <th class="font-bold text-brand-700 px-4 py-2.5 w-24">Salah</th>
+          </tr></thead>
+          <tbody>
+          ${q.statements.map((st,i)=>`
+            <tr class="border-t border-slateink-200 bg-white">
+              <td class="px-4 py-3 text-[14.5px] leading-relaxed">${st}</td>
+              <td class="text-center px-2 py-3">
+                <button data-kat-opt="${i}" data-kat-val="B" data-qno="${q.no}"
+                  class="w-6 h-6 rounded-full border-2 ${a.kat[i]==='B' ? 'border-brand-600 bg-brand-600' : 'border-slateink-300 bg-white'} inline-flex items-center justify-center transition">
+                  ${a.kat[i]==='B' ? '<span class="w-2.5 h-2.5 rounded-full bg-white"></span>' : ''}
+                </button>
+              </td>
+              <td class="text-center px-2 py-3">
+                <button data-kat-opt="${i}" data-kat-val="S" data-qno="${q.no}"
+                  class="w-6 h-6 rounded-full border-2 ${a.kat[i]==='S' ? 'border-brand-600 bg-brand-600' : 'border-slateink-300 bg-white'} inline-flex items-center justify-center transition">
+                  ${a.kat[i]==='S' ? '<span class="w-2.5 h-2.5 rounded-full bg-white"></span>' : ''}
+                </button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    }
+    return '';
+  }
+
+  function renderSidebar(){
+    return `
+    <aside class="hidden lg:flex flex-col w-[236px] shrink-0 bg-white border-r border-slateink-200 h-[calc(100vh-64px)] sticky top-16">
+      <div class="px-5 pt-5 pb-4 border-b border-slateink-100">
+        <p class="text-xs font-bold text-slateink-500 mb-2.5">Keterangan</p>
+        <div class="space-y-1.5 text-[12.5px] text-slateink-600">
+          <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-[5px] border-[1.6px] border-slateink-200 bg-white"></span>Belum dijawab</div>
+          <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-[5px] bg-brand-600"></span>Terjawab</div>
+          <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-[5px] bg-warn-100 border-[1.6px] border-warn-600"></span>Ditandai ragu-ragu</div>
+          <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-[5px] border-[1.6px] border-white" style="box-shadow:0 0 0 2px #2563EB"></span>Soal aktif</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto scrollbar-thin px-5 py-4">
+        <div class="grid grid-cols-4 gap-2">
+          ${EXAM_DATA.map((q,i)=>{
+            let cls = '';
+            if(state.flagged.has(q.no)) cls='st-flagged'; else if(isAnswered(q)) cls='st-answered';
+            if(i===state.currentIndex) cls += ' st-active';
+            return `<button data-jump="${i}" class="navpill ${cls}">${q.no}</button>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-slateink-100">
+        <div class="text-[12px] text-slateink-500 mb-1.5">Progres jawaban</div>
+        <div class="text-sm font-extrabold text-navy-900 mb-2">${answeredCount()}/${N} dijawab</div>
+        <div class="h-2 rounded-full bg-slateink-100 overflow-hidden">
+          <div class="h-full bg-brand-600 rounded-full transition-all" style="width:${Math.round(answeredCount()/N*100)}%"></div>
+        </div>
+      </div>
+    </aside>`;
+  }
+
+  function renderExam(){
+    const q = EXAM_DATA[state.currentIndex];
+    const pct = Math.round((answeredCount()/N)*100);
+    const isFlagged = state.flagged.has(q.no);
+    return `
+    <div class="min-h-screen flex flex-col">
+
+      <header class="fixed top-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-b border-slateink-200">
+        <div class="px-4 sm:px-6 h-16 flex items-center gap-4">
+          <button id="btn-mobile-nav" class="lg:hidden w-9 h-9 rounded-lg border border-slateink-200 inline-flex items-center justify-center shrink-0">
+            ${icon('layout-grid','w-4.5 h-4.5 text-slateink-600')}
+          </button>
+          <div class="min-w-0 flex-1">
+            <p class="text-[13px] sm:text-sm font-extrabold text-navy-900 truncate">Try Out TKA — ${TOPIC_TITLE}</p>
+            <div class="flex items-center gap-2.5 mt-1">
+              <div class="h-1.5 w-28 sm:w-40 rounded-full bg-slateink-100 overflow-hidden">
+                <div class="h-full bg-brand-600 rounded-full transition-all" style="width:${pct}%"></div>
+              </div>
+              <span class="text-[11px] font-bold text-slateink-500 num-tab">${pct}% &middot; ${answeredCount()}/${N} dijawab</span>
+            </div>
+          </div>
+          <div id="timer-pill" class="shrink-0 inline-flex items-center gap-1.5 rounded-full border-[1.6px] ${state.timeLeftSec<=300?'border-bad-600 text-bad-700 bg-bad-50':'border-brand-600 text-brand-700 bg-brand-50'} px-3.5 py-1.5 font-extrabold text-sm num-tab">
+            ${icon('timer','w-4 h-4')} <span id="timer-text">${fmtTime(state.timeLeftSec)}</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="flex flex-1 pt-16">
+        ${renderSidebar()}
+
+        <main class="flex-1 min-w-0 px-4 sm:px-8 py-6 sm:py-8 max-w-3xl mx-auto w-full">
+          <div class="anim-fade-up" key="${q.no}">
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+              <span class="text-xs font-extrabold text-brand-700 bg-brand-50 border border-brand-100 rounded-lg px-2.5 py-1">SOAL ${q.no} / ${N}</span>
+              <span class="text-[11px] font-bold border rounded-lg px-2.5 py-1 ${levelBadgeClasses(q.level)}">${q.level}</span>
+              <span class="text-[11px] font-bold border border-slateink-200 text-slateink-600 bg-slateink-50 rounded-lg px-2.5 py-1">${TYPE_LABELS[q.type]}</span>
+              <button id="btn-flag" data-qno="${q.no}" class="ml-auto text-xs font-bold rounded-lg px-3 py-1.5 border transition inline-flex items-center gap-1.5
+                ${isFlagged ? 'bg-warn-100 border-warn-600 text-warn-700' : 'bg-white border-slateink-200 text-slateink-600 hover:border-warn-400'}">
+                ${icon('flag','w-3.5 h-3.5')} ${isFlagged?'Ditandai':'Tandai ragu-ragu'}
+              </button>
+            </div>
+
+            <div class="bg-white border border-slateink-200 rounded-2xl shadow-card p-5 sm:p-7">
+              ${renderQuestionBody(q)}
+              ${renderOptionsInput(q, 'exam')}
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <div class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-slateink-200">
+        <div class="max-w-3xl mx-auto lg:ml-[calc(236px+((100vw-236px)/2-378px))] px-4 sm:px-8 h-[68px] flex items-center gap-3">
+          <button id="btn-prev" ${state.currentIndex===0?'disabled':''} class="inline-flex items-center gap-1.5 rounded-xl border border-slateink-200 px-4 py-2.5 text-sm font-bold text-slateink-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-brand-400 transition">
+            ${icon('arrow-left','w-4 h-4')} <span class="hidden sm:inline">Sebelumnya</span>
+          </button>
+          <button id="btn-next" ${state.currentIndex===N-1?'disabled':''} class="inline-flex items-center gap-1.5 rounded-xl border border-slateink-200 px-4 py-2.5 text-sm font-bold text-slateink-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-brand-400 transition">
+            <span class="hidden sm:inline">Berikutnya</span> ${icon('arrow-right','w-4 h-4')}
+          </button>
+          <button id="btn-finish" class="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-good-600 hover:bg-good-700 text-white px-5 py-2.5 text-sm font-extrabold transition shadow-md shadow-good-600/25">
+            ${icon('check-circle-2','w-4.5 h-4.5')} Selesaikan Ujian
+          </button>
+        </div>
+      </div>
+    </div>
+
+    ${state.jumpMenuOpen ? renderMobileJump() : ''}
+    ${state.confirmOpen ? renderConfirmModal() : ''}
+    `;
+  }
+
+  function renderMobileJump(){
+    return `
+    <div id="mobile-jump-overlay" class="fixed inset-0 z-40 bg-navy-950/50 flex items-end lg:hidden">
+      <div class="anim-pop w-full bg-white rounded-t-3xl max-h-[78vh] flex flex-col">
+        <div class="px-5 pt-4 pb-3 border-b border-slateink-100 flex items-center justify-between">
+          <p class="font-extrabold text-navy-900">Navigasi Soal</p>
+          <button id="btn-close-jump" class="w-8 h-8 rounded-full bg-slateink-100 inline-flex items-center justify-center">${icon('x','w-4 h-4')}</button>
+        </div>
+        <div class="px-5 py-3 flex gap-4 text-[11.5px] text-slateink-600 flex-wrap border-b border-slateink-100">
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded border border-slateink-200 bg-white"></span>Belum</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-brand-600"></span>Terjawab</div>
+          <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-warn-100 border border-warn-600"></span>Ragu-ragu</div>
+        </div>
+        <div class="overflow-y-auto scrollbar-thin px-5 py-4">
+          <div class="grid grid-cols-6 gap-2">
+            ${EXAM_DATA.map((q,i)=>{
+              let cls = '';
+              if(state.flagged.has(q.no)) cls='st-flagged'; else if(isAnswered(q)) cls='st-answered';
+              if(i===state.currentIndex) cls += ' st-active';
+              return `<button data-jump="${i}" class="navpill ${cls}">${q.no}</button>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderConfirmModal(){
+    const un = unansweredCount();
+    return `
+    <div id="confirm-overlay" class="fixed inset-0 z-50 bg-navy-950/55 flex items-center justify-center px-4">
+      <div class="anim-pop bg-white rounded-3xl shadow-pop max-w-md w-full p-7 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-warn-50 border border-warn-100 text-warn-600 mx-auto flex items-center justify-center mb-4">
+          ${icon('alert-triangle','w-6 h-6')}
+        </div>
+        <h3 class="text-lg font-extrabold text-navy-900">Selesaikan Ujian?</h3>
+        <p class="text-sm text-slateink-600 mt-2 leading-relaxed">
+          ${un>0 ? `Kamu masih memiliki <span class="font-extrabold text-bad-600">${un} soal</span> yang belum dijawab.<br>` : ''}
+          Yakin ingin menyelesaikan ujian sekarang?
+        </p>
+        <div class="grid grid-cols-2 gap-3 mt-6">
+          <button id="btn-cancel-finish" class="rounded-xl border border-slateink-200 py-2.5 font-bold text-sm text-slateink-700 hover:bg-slateink-50 transition">Kembali</button>
+          <button id="btn-confirm-finish" class="rounded-xl bg-bad-600 hover:bg-bad-700 py-2.5 font-bold text-sm text-white transition">Ya, Selesaikan</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  /* ============================================================ RESULT SCREEN */
+  function renderGauge(pct){
+    const r = 66, C = 2*Math.PI*r;
+    const off = C - (pct/100)*C;
+    const color = pct>=75 ? '#16A34A' : pct>=50 ? '#2563EB' : '#DC2626';
+    return `
+    <svg viewBox="0 0 160 160" class="w-40 h-40 sm:w-44 sm:h-44">
+      <circle cx="80" cy="80" r="${r}" fill="none" stroke="#EEF2F8" stroke-width="14"/>
+      <circle cx="80" cy="80" r="${r}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"
+        stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 80 80)" class="gauge-ring"/>
+      <text x="80" y="76" text-anchor="middle" font-size="34" font-weight="800" fill="#0F172A" font-family="Plus Jakarta Sans, sans-serif">${pct}</text>
+      <text x="80" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#64748B" font-family="Plus Jakarta Sans, sans-serif">dari 100</text>
+    </svg>`;
+  }
+
+  function statusOf(q){
+    if(!isAnswered(q)) return 'unanswered';
+    return isCorrect(q) ? 'correct' : 'incorrect';
+  }
+  function statusMeta(status){
+    if(status==='correct') return {label:'Benar', cls:'bg-good-50 text-good-700 border-good-100', dot:'bg-good-600', ic:'check-circle-2'};
+    if(status==='incorrect') return {label:'Salah', cls:'bg-bad-50 text-bad-700 border-bad-100', dot:'bg-bad-600', ic:'x-circle'};
+    return {label:'Tidak Dijawab', cls:'bg-warn-50 text-warn-700 border-warn-100', dot:'bg-warn-600', ic:'circle-dashed'};
+  }
+
+  function renderAnswerRecap(q){
+    const a = state.answers[q.no];
+    if(q.type==='pg'){
+      return `<div class="space-y-2 mt-4">
+        ${q.options.map((opt,i)=>{
+          const picked = a.pg===i, correct = q.answer===i;
+          let cls = 'opt-shell !cursor-default';
+          if(correct) cls += ' is-correct'; else if(picked && !correct) cls += ' is-incorrect';
+          return `<div class="${cls}">
+            <span class="opt-radio ${correct?'!border-good-600':(picked?'!border-bad-600':'')}"><span class="opt-radio-dot" style="${(correct||picked)?'opacity:1;transform:scale(1);background:'+(correct?'#16A34A':'#DC2626'):''}"></span></span>
+            <span class="flex-1 text-[14.5px] leading-relaxed pt-0.5 flex items-center gap-2 flex-wrap">
+              <span><span class="font-bold text-slateink-500 mr-1">${LETTERS[i]}.</span>${opt}</span>
+              ${correct?'<span class="text-[11px] font-extrabold text-good-700 bg-good-100 rounded px-1.5 py-0.5">&check; kunci</span>':''}
+              ${(picked && !correct)?'<span class="text-[11px] font-extrabold text-bad-700 bg-bad-100 rounded px-1.5 py-0.5">Jawabanmu</span>':''}
+            </span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+    if(q.type==='mcma'){
+      const want = new Set(q.answer);
+      return `<div class="space-y-2 mt-4">
+        ${q.options.map((opt,i)=>{
+          const picked = a.mcma.has(i), correct = want.has(i);
+          let cls = 'opt-shell !cursor-default';
+          if(correct) cls += ' is-correct'; else if(picked && !correct) cls += ' is-incorrect';
+          return `<div class="${cls}">
+            <span class="opt-check ${correct?'!border-good-600 !bg-good-600':(picked?'!border-bad-600 !bg-bad-600':'')}">${(correct||picked)?icon('check','w-3.5 h-3.5 text-white'):''}</span>
+            <span class="flex-1 text-[14.5px] leading-relaxed pt-0.5 flex items-center gap-2 flex-wrap">
+              <span><span class="font-bold text-slateink-500 mr-1">${LETTERS[i]}.</span>${opt}</span>
+              ${correct?'<span class="text-[11px] font-extrabold text-good-700 bg-good-100 rounded px-1.5 py-0.5">&check; kunci</span>':''}
+              ${(picked && !correct)?'<span class="text-[11px] font-extrabold text-bad-700 bg-bad-100 rounded px-1.5 py-0.5">Jawabanmu</span>':''}
+            </span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+    if(q.type==='kat'){
+      return `<div class="mt-4 overflow-x-auto rounded-xl border border-slateink-200">
+        <table class="w-full text-sm">
+          <thead><tr class="bg-slateink-50">
+            <th class="text-left font-bold text-slateink-600 px-4 py-2.5">Pernyataan</th>
+            <th class="font-bold text-slateink-600 px-3 py-2.5 w-28">Jawabanmu</th>
+            <th class="font-bold text-slateink-600 px-3 py-2.5 w-24">Kunci</th>
+          </tr></thead>
+          <tbody>
+          ${q.statements.map((st,i)=>{
+            const picked = a.kat[i], correct = q.answer[i];
+            const ok = picked===correct;
+            return `<tr class="border-t border-slateink-200 bg-white">
+              <td class="px-4 py-3 text-[14px] leading-relaxed">${st}</td>
+              <td class="text-center px-2 py-3">
+                <span class="inline-flex items-center gap-1 text-xs font-extrabold rounded-full px-2.5 py-1 ${picked===null?'bg-slateink-100 text-slateink-500':(ok?'bg-good-100 text-good-700':'bg-bad-100 text-bad-700')}">
+                  ${picked===null?'—':(picked==='B'?'Benar':'Salah')}
+                </span>
+              </td>
+              <td class="text-center px-2 py-3">
+                <span class="inline-flex items-center gap-1 text-xs font-extrabold rounded-full px-2.5 py-1 bg-good-100 text-good-700">${correct==='B'?'Benar':'Salah'}</span>
+              </td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    }
+    return '';
+  }
+
+  function renderReviewCard(q, forceOpen){
+    const status = statusOf(q);
+    const meta = statusMeta(status);
+    const open = forceOpen || state.reviewAll;
+    return `
+    <div class="bg-white border border-slateink-200 rounded-2xl shadow-card overflow-hidden" id="review-${q.no}">
+      <button data-toggle-review="${q.no}" class="w-full flex items-center gap-3 px-5 py-4 text-left">
+        <span class="w-8 h-8 rounded-lg bg-slateink-50 border border-slateink-200 flex items-center justify-center text-[13px] font-extrabold text-slateink-600 shrink-0">${q.no}</span>
+        <span class="flex-1 min-w-0">
+          <span class="text-[13.5px] font-bold text-navy-900 truncate block">${q.elemen} &middot; ${q.sub}</span>
+          <span class="text-[11.5px] text-slateink-500">${q.level} &middot; ${TYPE_LABELS[q.type]}</span>
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11.5px] font-extrabold rounded-full px-2.5 py-1 border ${meta.cls} shrink-0">
+          ${icon(meta.ic,'w-3.5 h-3.5')} ${meta.label}
+        </span>
+        <span class="shrink-0 text-slateink-400">${icon(open?'chevron-up':'chevron-down','w-4.5 h-4.5')}</span>
+      </button>
+      <div class="${open?'':'hidden'} px-5 pb-5 border-t border-slateink-100 pt-4" data-review-body>
+        ${renderQuestionBody(q)}
+        ${renderAnswerRecap(q)}
+        <div class="mt-4 rounded-xl border border-brand-100 bg-brand-50/60 p-4">
+          <p class="text-[11.5px] font-extrabold text-brand-700 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">${icon('lightbulb','w-3.5 h-3.5')} Pembahasan</p>
+          <div class="prose-q math-block text-[14.5px] text-slateink-700">${q.explanation}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderResult(){
+    const pct = scorePct();
+    const correct = correctCount(), wrong = wrongCount(), un = unansweredCount();
+    const dt = state.finishedAt ? fmtDateTime(state.finishedAt) : '';
+    return `
+    <div class="min-h-screen px-4 sm:px-6 py-8 sm:py-12">
+      <div class="max-w-3xl mx-auto space-y-6">
+
+        <div id="result-summary-card" class="bg-white border border-slateink-200 rounded-3xl shadow-card overflow-hidden anim-fade-up">
+          <div class="px-6 sm:px-9 pt-8 pb-7 bg-navy-900 grid-texture relative overflow-hidden">
+            <div class="absolute -right-16 -top-20 w-64 h-64 rounded-full bg-brand-600/25 blur-3xl"></div>
+            <p class="relative text-[11px] font-bold tracking-wide text-brand-100 bg-white/10 border border-white/15 inline-block rounded-full px-3 py-1">HASIL UJIAN</p>
+            <h2 class="relative text-white text-xl sm:text-2xl font-extrabold mt-3">Ringkasan Evaluasi Kamu</h2>
+            <div class="relative grid sm:grid-cols-2 gap-4 mt-5 text-slateink-200 text-[13px]">
+              <div>
+                <p class="text-slateink-400 text-[11px] font-semibold">Nama Peserta</p>
+                <p class="font-bold text-white">${esc(state.identity.name)}</p>
+              </div>
+              <div>
+                <p class="text-slateink-400 text-[11px] font-semibold">Kelas / Asal Sekolah</p>
+                <p class="font-bold text-white">${esc(state.identity.kelas)} &middot; ${esc(state.identity.sekolah)}</p>
+              </div>
+              <div class="sm:col-span-2">
+                <p class="text-slateink-400 text-[11px] font-semibold">Waktu Pengerjaan Selesai</p>
+                <p class="font-bold text-white">${dt}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-6 sm:px-9 py-8 flex flex-col sm:flex-row items-center gap-8">
+            <div class="shrink-0">${renderGauge(pct)}</div>
+            <div class="flex-1 w-full grid grid-cols-3 gap-3">
+              <div class="rounded-2xl bg-good-50 border border-good-100 px-3 py-3.5 text-center">
+                <p class="text-2xl font-extrabold text-good-700 num-tab">${correct}</p>
+                <p class="text-[11px] font-bold text-good-700 mt-0.5">Benar</p>
+              </div>
+              <div class="rounded-2xl bg-bad-50 border border-bad-100 px-3 py-3.5 text-center">
+                <p class="text-2xl font-extrabold text-bad-700 num-tab">${wrong}</p>
+                <p class="text-[11px] font-bold text-bad-700 mt-0.5">Salah</p>
+              </div>
+              <div class="rounded-2xl bg-warn-50 border border-warn-100 px-3 py-3.5 text-center">
+                <p class="text-2xl font-extrabold text-warn-700 num-tab">${un}</p>
+                <p class="text-[11px] font-bold text-warn-700 mt-0.5">Tidak Dijawab</p>
+              </div>
+              <div class="col-span-3 rounded-2xl bg-slateink-50 border border-slateink-200 px-4 py-3 flex items-center justify-between mt-1">
+                <span class="text-[13px] font-bold text-slateink-600">Skor Akhir</span>
+                <span class="text-lg font-extrabold text-navy-900 num-tab">${correct}/${N}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-6 sm:px-9 pb-8 grid sm:grid-cols-3 gap-3">
+            <button id="btn-restart" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slateink-200 py-2.5 text-sm font-bold text-slateink-700 hover:bg-slateink-50 transition">
+              ${icon('rotate-ccw','w-4 h-4')} Ulangi Ujian
+            </button>
+            <button id="btn-open-all" class="inline-flex items-center justify-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 py-2.5 text-sm font-bold text-brand-700 hover:bg-brand-100 transition">
+              ${icon('book-open','w-4 h-4')} ${state.reviewAll?'Tutup Semua Pembahasan':'Buka Semua Pembahasan'}
+            </button>
+            <button id="btn-download-pdf" class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 py-2.5 text-sm font-bold text-white transition shadow-md shadow-brand-600/25">
+              ${icon('download','w-4 h-4')} <span id="pdf-btn-label">Download Hasil (PDF)</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-[15px] font-extrabold text-navy-900 mb-3 px-1">Daftar Evaluasi &amp; Pembahasan per Soal</h3>
+          <div class="space-y-3">
+            ${EXAM_DATA.map(q=>renderReviewCard(q,false)).join('')}
+          </div>
+        </div>
+
+        <p class="text-center text-[12px] text-slateink-400 pt-2 pb-6">Simulator Ujian TKA Matematika &middot; Dibuat untuk latihan mandiri.</p>
+      </div>
+    </div>`;
+  }
+
+  /* ============================================================ PDF EXPORT */
+  function buildPrintBlocks(){
+    const pct = scorePct(), correct = correctCount(), wrong = wrongCount(), un = unansweredCount();
+    const dt = state.finishedAt ? fmtDateTime(state.finishedAt) : '';
+    const wrap = inner => `<div style="padding:0 40px 10px;background:#fff;font-family:'Plus Jakarta Sans',Arial,sans-serif;color:#0F172A;">${inner}</div>`;
+    const blocks = [];
+
+    blocks.push(wrap(`
+      <div style="padding-top:8px;">
+        <div style="border-bottom:3px solid #2563EB;padding-bottom:14px;margin-bottom:18px;">
+          <p style="font-size:11px;font-weight:800;letter-spacing:.06em;color:#2563EB;text-transform:uppercase;margin:0 0 4px;">Laporan Hasil Ujian</p>
+          <h1 style="font-size:19px;margin:0;font-weight:800;">Simulator Ujian — ${TOPIC_TITLE}</h1>
+        </div>
+        <table style="width:100%;font-size:12.5px;margin-bottom:16px;border-collapse:collapse;">
+          <tr><td style="padding:3px 0;color:#64748B;width:140px;">Nama Peserta</td><td style="padding:3px 0;font-weight:700;">${esc(state.identity.name)}</td></tr>
+          <tr><td style="padding:3px 0;color:#64748B;">Kelas</td><td style="padding:3px 0;font-weight:700;">${esc(state.identity.kelas)}</td></tr>
+          <tr><td style="padding:3px 0;color:#64748B;">Asal Sekolah</td><td style="padding:3px 0;font-weight:700;">${esc(state.identity.sekolah)}</td></tr>
+          <tr><td style="padding:3px 0;color:#64748B;">Waktu Selesai</td><td style="padding:3px 0;font-weight:700;">${dt}</td></tr>
+        </table>
+        <table style="width:100%;border-collapse:separate;border-spacing:10px 0;margin:0 -10px 18px;">
+          <tr>
+            <td style="width:25%;background:#EFF5FF;border-radius:10px;padding:12px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#1D4ED8;">${pct}</div><div style="font-size:11px;color:#1D4ED8;font-weight:700;">Nilai Akhir</div></td>
+            <td style="width:25%;background:#F0FDF4;border-radius:10px;padding:12px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#15803D;">${correct}</div><div style="font-size:11px;color:#15803D;font-weight:700;">Benar</div></td>
+            <td style="width:25%;background:#FEF2F2;border-radius:10px;padding:12px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#B91C1C;">${wrong}</div><div style="font-size:11px;color:#B91C1C;font-weight:700;">Salah</div></td>
+            <td style="width:25%;background:#FFFBEB;border-radius:10px;padding:12px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#B45309;">${un}</div><div style="font-size:11px;color:#B45309;font-weight:700;">Tidak Dijawab</div></td>
+          </tr>
+        </table>
+        <h2 style="font-size:14px;font-weight:800;margin:0 0 4px;">Rekapitulasi Seluruh Soal</h2>
+      </div>`));
+
+    EXAM_DATA.forEach(q=>{
+      const status = statusOf(q);
+      const meta = statusMeta(status);
+      const a = state.answers[q.no];
+      let answerHtml = '';
+      if(q.type==='pg'){
+        answerHtml = `<p style="margin:2px 0"><b>Jawabanmu:</b> ${a.pg!==null? LETTERS[a.pg]+'. '+esc(stripTags(q.options[a.pg])) : '—'}</p><p style="margin:2px 0"><b>Kunci:</b> ${LETTERS[q.answer]}. ${esc(stripTags(q.options[q.answer]))}</p>`;
+      } else if(q.type==='mcma'){
+        const picked = [...a.mcma].sort((x,y)=>x-y).map(i=>LETTERS[i]).join(', ') || '—';
+        const key = q.answer.slice().sort((x,y)=>x-y).map(i=>LETTERS[i]).join(', ');
+        answerHtml = `<p style="margin:2px 0"><b>Jawabanmu:</b> ${picked}</p><p style="margin:2px 0"><b>Kunci:</b> ${key}</p>`;
+      } else if(q.type==='kat'){
+        answerHtml = q.statements.map((st,i)=>{
+          const picked = a.kat[i]===null?'—':(a.kat[i]==='B'?'Benar':'Salah');
+          const key = q.answer[i]==='B'?'Benar':'Salah';
+          return `<p style="margin:3px 0;font-size:11.5px">&bull; ${st} — <b>Jawabanmu:</b> ${picked}, <b>Kunci:</b> ${key}</p>`;
+        }).join('');
+      }
+      const img = q.img_data ? `<div style="text-align:center;margin:8px 0;"><img src="${q.img_data}" style="max-width:100%;max-height:320px;"/></div>` : '';
+      const badgeBg = status==='correct'?'#DCFCE7':status==='incorrect'?'#FEE2E2':'#FEF3C7';
+      const badgeFg = status==='correct'?'#15803D':status==='incorrect'?'#B91C1C':'#B45309';
+      blocks.push(wrap(`
+        <div style="border:1px solid #E2E8F0;border-radius:10px;padding:14px 16px;">
+          <table style="width:100%;border-collapse:collapse;margin-bottom:6px;"><tr>
+            <td style="font-weight:800;font-size:12.5px;color:#0F172A;">Soal ${q.no} &middot; ${esc(q.elemen)} / ${esc(q.sub)}</td>
+            <td style="text-align:right;white-space:nowrap;"><span style="font-weight:800;font-size:11px;padding:2px 10px;border-radius:999px;background:${badgeBg};color:${badgeFg};">${meta.label}</span></td>
+          </tr></table>
+          <div class="math-block prose-q" style="font-size:12.5px;color:#334155;line-height:1.6">${q.stem||''}${img}${q.post||''}</div>
+          <div style="font-size:12px;color:#0F172A;margin-top:8px;background:#F8FAFC;border-radius:8px;padding:8px 10px;">${answerHtml}</div>
+          <div class="math-block prose-q" style="font-size:12px;color:#334155;margin-top:8px;border-top:1px dashed #CBD5E1;padding-top:8px;line-height:1.6">
+            <b style="color:#1D4ED8;">Pembahasan:</b> ${q.explanation}
+          </div>
+        </div>`));
+    });
+    return blocks;
+  }
+
+  function stripTags(html){
+    const d = document.createElement('div'); d.innerHTML = html||''; return d.textContent || '';
+  }
+
+  function waitImages(root){
+    return Promise.all([...root.querySelectorAll('img')].map(im => im.complete ? 1 : new Promise(r=>{ im.onload=im.onerror=r; })));
+  }
+
+  function canvasSlice(src, y, h){
+    const c = document.createElement('canvas');
+    c.width = src.width; c.height = h;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,c.width,c.height);
+    ctx.drawImage(src, 0, y, src.width, h, 0, 0, src.width, h);
+    return c;
+  }
+
+  async function downloadPDF(){
+    const btn = document.getElementById('btn-download-pdf');
+    const btnLabel = document.getElementById('pdf-btn-label');
+    if(btn && btn.dataset.busy==='1') return;
+    if(btn) btn.dataset.busy = '1';
+    const setLabel = t => { if(btnLabel) btnLabel.textContent = t; };
+    setLabel('Menyiapkan PDF...');
+
+    if(!(window.html2canvas && window.jspdf && window.jspdf.jsPDF)){
+      // Library gagal dimuat (mis. offline) -> pakai dialog cetak browser sebagai cadangan
+      if(btn) btn.dataset.busy = '0';
+      setLabel('Download Hasil (PDF)');
+      alert('Library PDF gagal dimuat. Dialog cetak akan dibuka — pilih "Simpan sebagai PDF".');
+      window.print();
+      return;
+    }
+
+    const prevScroll = window.scrollY;
+    window.scrollTo(0,0);
+    const overlay = document.createElement('div');
+    overlay.id = 'pdf-overlay';
+    overlay.innerHTML = '<span id="pdf-overlay-text">Menyiapkan PDF...</span>';
+    document.body.appendChild(overlay);
+    const ovText = overlay.firstChild;
+
+    const holder = document.createElement('div');
+    holder.id = 'print-report';
+    holder.innerHTML = buildPrintBlocks().map(h=>`<div class="pdf-block">${h}</div>`).join('');
+    document.body.appendChild(holder);
+
+    try{
+      renderMathIn(holder);
+      if(document.fonts && document.fonts.ready) await document.fonts.ready;
+      await waitImages(holder);
+      await new Promise(r=>setTimeout(r,150));
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit:'pt', format:'a4', orientation:'portrait', compress:true });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const mTop = 30, mBottom = 34;
+      const usableH = pageH - mTop - mBottom;
+      let cursorY = mTop;
+      const blocks = [...holder.querySelectorAll('.pdf-block')];
+
+      for(let i=0;i<blocks.length;i++){
+        ovText.textContent = `Membuat PDF... ${i+1}/${blocks.length}`;
+        setLabel(`Membuat PDF... ${i+1}/${blocks.length}`);
+        await new Promise(r=>setTimeout(r,0));
+        const canvas = await html2canvas(blocks[i], {
+          scale: 2, useCORS:true, backgroundColor:'#ffffff', logging:false,
+          scrollX:0, scrollY:0, windowWidth: 794
+        });
+        const ratio = pageW / canvas.width;          // px canvas -> pt
+        const blockH = canvas.height * ratio;
+
+        if(blockH <= usableH){
+          if(cursorY + blockH > pageH - mBottom && cursorY > mTop){ pdf.addPage(); cursorY = mTop; }
+          pdf.addImage(canvas.toDataURL('image/jpeg',0.92), 'JPEG', 0, cursorY, pageW, blockH);
+          cursorY += blockH;
+        } else {
+          // Blok lebih tinggi dari satu halaman -> potong per halaman
+          if(cursorY > mTop){ pdf.addPage(); cursorY = mTop; }
+          const sliceHpx = Math.floor(usableH / ratio);
+          for(let y=0; y<canvas.height; y+=sliceHpx){
+            const h = Math.min(sliceHpx, canvas.height - y);
+            const part = canvasSlice(canvas, y, h);
+            if(y>0){ pdf.addPage(); cursorY = mTop; }
+            pdf.addImage(part.toDataURL('image/jpeg',0.92), 'JPEG', 0, cursorY, pageW, h*ratio);
+            cursorY += h*ratio;
+          }
+        }
+      }
+
+      const total = pdf.getNumberOfPages();
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(9); pdf.setTextColor(148,163,184);
+      for(let p=1;p<=total;p++){
+        pdf.setPage(p);
+        pdf.text(`Halaman ${p} dari ${total}`, pageW/2, pageH-16, { align:'center' });
+      }
+
+      const safeName = (state.identity.name||'peserta').trim().replace(/[^\w\-]+/g,'_') || 'peserta';
+      pdf.save(`Hasil-Ujian-${safeName}.pdf`);
+    }catch(err){
+      console.error('Gagal membuat PDF:', err);
+      alert('Maaf, PDF gagal dibuat. Coba lagi, atau gunakan Ctrl+P lalu "Simpan sebagai PDF".');
+    }finally{
+      holder.remove();
+      overlay.remove();
+      window.scrollTo(0, prevScroll);
+      if(btn) btn.dataset.busy = '0';
+      setLabel('Download Hasil (PDF)');
+    }
+  }
+
+  /* ============================================================ TIMER */
+  function startTimer(){
+    stopTimer();
+    state.timerId = setInterval(()=>{
+      state.timeLeftSec--;
+      const el = document.getElementById('timer-text');
+      const pill = document.getElementById('timer-pill');
+      if(el) el.textContent = fmtTime(state.timeLeftSec);
+      if(pill){
+        if(state.timeLeftSec<=300){ pill.classList.add('border-bad-600','text-bad-700','bg-bad-50'); pill.classList.remove('border-brand-600','text-brand-700','bg-brand-50'); }
+      }
+      if(state.timeLeftSec<=0){
+        stopTimer();
+        finishExam(true);
+      }
+    }, 1000);
+  }
+  function stopTimer(){ if(state.timerId){ clearInterval(state.timerId); state.timerId=null; } }
+
+  function finishExam(auto){
+    stopTimer();
+    state.finishedAt = new Date();
+    state.confirmOpen = false;
+    state.screen = 'result';
+    state.reviewAll = false;
+    render();
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+
+  /* ============================================================ EVENTS */
+  function bindEvents(){
+    if(state.screen==='start'){
+      const nameI = document.getElementById('inp-name');
+      const kelasI = document.getElementById('inp-kelas');
+      const sekolahI = document.getElementById('inp-sekolah');
+      if(nameI) nameI.oninput = e=> state.identity.name = e.target.value;
+      if(kelasI) kelasI.oninput = e=> state.identity.kelas = e.target.value;
+      if(sekolahI) sekolahI.oninput = e=> state.identity.sekolah = e.target.value;
+
+      const slider = document.getElementById('dur-slider');
+      if(slider) slider.oninput = e=>{
+        state.durationMin = parseInt(e.target.value,10);
+        const lbl = document.getElementById('dur-label');
+        if(lbl) lbl.textContent = state.durationMin+' menit';
+      };
+
+      const btn = document.getElementById('btn-start');
+      if(btn) btn.onclick = ()=>{
+        const name=(document.getElementById('inp-name').value||'').trim();
+        const kelas=(document.getElementById('inp-kelas').value||'').trim();
+        const sekolah=(document.getElementById('inp-sekolah').value||'').trim();
+        if(!name || !kelas || !sekolah){
+          document.getElementById('form-err').classList.remove('hidden');
+          return;
+        }
+        state.identity = {name, kelas, sekolah};
+        state.timeLeftSec = state.durationMin*60;
+        state.startedAt = new Date();
+        state.currentIndex = 0;
+        state.screen = 'exam';
+        render();
+        startTimer();
+      };
+      return;
+    }
+
+    if(state.screen==='exam'){
+      // option interactions
+      $app.querySelectorAll('[data-pg-opt]').forEach(el=>{
+        el.onclick = ()=>{
+          const qno = parseInt(el.dataset.qno,10), val = parseInt(el.dataset.pgOpt,10);
+          state.answers[qno].pg = state.answers[qno].pg===val ? null : val;
+          render();
+        };
+      });
+      $app.querySelectorAll('[data-mcma-opt]').forEach(el=>{
+        el.onclick = ()=>{
+          const qno = parseInt(el.dataset.qno,10), val = parseInt(el.dataset.mcmaOpt,10);
+          const set = state.answers[qno].mcma;
+          set.has(val) ? set.delete(val) : set.add(val);
+          render();
+        };
+      });
+      $app.querySelectorAll('[data-kat-opt]').forEach(el=>{
+        el.onclick = ()=>{
+          const qno = parseInt(el.dataset.qno,10), idx = parseInt(el.dataset.katOpt,10), val = el.dataset.katVal;
+          const arr = state.answers[qno].kat;
+          arr[idx] = arr[idx]===val ? null : val;
+          render();
+        };
+      });
+
+      const flagBtn = document.getElementById('btn-flag');
+      if(flagBtn) flagBtn.onclick = ()=>{
+        const qno = parseInt(flagBtn.dataset.qno,10);
+        state.flagged.has(qno) ? state.flagged.delete(qno) : state.flagged.add(qno);
+        render();
+      };
+
+      const prevBtn = document.getElementById('btn-prev');
+      if(prevBtn) prevBtn.onclick = ()=>{ if(state.currentIndex>0){ state.currentIndex--; render(); window.scrollTo({top:0,behavior:'smooth'}); } };
+      const nextBtn = document.getElementById('btn-next');
+      if(nextBtn) nextBtn.onclick = ()=>{ if(state.currentIndex<N-1){ state.currentIndex++; render(); window.scrollTo({top:0,behavior:'smooth'}); } };
+
+      $app.querySelectorAll('[data-jump]').forEach(el=>{
+        el.onclick = ()=>{
+          state.currentIndex = parseInt(el.dataset.jump,10);
+          state.jumpMenuOpen = false;
+          render();
+          window.scrollTo({top:0,behavior:'smooth'});
+        };
+      });
+
+      const mobileNavBtn = document.getElementById('btn-mobile-nav');
+      if(mobileNavBtn) mobileNavBtn.onclick = ()=>{ state.jumpMenuOpen = true; render(); };
+      const closeJump = document.getElementById('btn-close-jump');
+      if(closeJump) closeJump.onclick = ()=>{ state.jumpMenuOpen = false; render(); };
+      const jumpOverlay = document.getElementById('mobile-jump-overlay');
+      if(jumpOverlay) jumpOverlay.addEventListener('click', e=>{ if(e.target===jumpOverlay){ state.jumpMenuOpen=false; render(); } });
+
+      const finishBtn = document.getElementById('btn-finish');
+      if(finishBtn) finishBtn.onclick = ()=>{ state.confirmOpen = true; render(); };
+      const cancelFinish = document.getElementById('btn-cancel-finish');
+      if(cancelFinish) cancelFinish.onclick = ()=>{ state.confirmOpen = false; render(); };
+      const confirmFinish = document.getElementById('btn-confirm-finish');
+      if(confirmFinish) confirmFinish.onclick = ()=> finishExam(false);
+      const overlay = document.getElementById('confirm-overlay');
+      if(overlay) overlay.addEventListener('click', e=>{ if(e.target===overlay){ state.confirmOpen=false; render(); } });
+      return;
+    }
+
+    if(state.screen==='result'){
+      const restartBtn = document.getElementById('btn-restart');
+      if(restartBtn) restartBtn.onclick = ()=>{
+        EXAM_DATA.forEach(q=>{
+          if(q.type==='pg') state.answers[q.no] = { pg:null };
+          else if(q.type==='mcma') state.answers[q.no] = { mcma:new Set() };
+          else if(q.type==='kat') state.answers[q.no] = { kat: q.statements.map(()=>null) };
+        });
+        state.flagged.clear();
+        state.currentIndex = 0;
+        state.reviewAll = false;
+        state.screen = 'start';
+        render();
+        window.scrollTo({top:0,behavior:'instant'});
+      };
+      const openAll = document.getElementById('btn-open-all');
+      if(openAll) openAll.onclick = ()=>{ state.reviewAll = !state.reviewAll; render(); };
+      const pdfBtn = document.getElementById('btn-download-pdf');
+      if(pdfBtn) pdfBtn.onclick = downloadPDF;
+
+      $app.querySelectorAll('[data-toggle-review]').forEach(el=>{
+        el.onclick = ()=>{
+          const qno = el.dataset.toggleReview;
+          const card = document.getElementById('review-'+qno);
+          const body = card.querySelector('[data-review-body]');
+          const chevron = card.querySelector('svg, i[data-lucide]');
+          const willOpen = body.classList.contains('hidden');
+          body.classList.toggle('hidden');
+          const chevronEl = card.querySelector('button > span:last-child');
+          if(chevronEl) chevronEl.innerHTML = icon(willOpen?'chevron-up':'chevron-down','w-4.5 h-4.5');
+          mountIcons();
+          if(willOpen) renderMathIn(body);
+        };
+      });
+      return;
+    }
+  }
+
+  /* ============================================================ INIT */
+  render();
+
+})();
+</script>
+</body>
+</html>
